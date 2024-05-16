@@ -40,29 +40,6 @@ func createElement(path, name, size, modified string) string {
 	)
 }
 
-func MirrorWorker(ctx *gin.Context, path string) {
-	iPath := fmt.Sprintf("data/%s", path)
-	file, err := os.Stat(iPath)
-	if err != nil {
-		ctx.JSON(404, gin.H{
-			"status": 404,
-			"error":  err.Error(),
-		})
-		return
-	}
-
-	if !file.IsDir() {
-		ctx.FileAttachment(iPath, file.Name())
-		return
-	}
-
-	dir := read(path)
-	ctx.HTML(200, "index.html", gin.H{
-		"dir":     path,
-		"content": template.HTML(*dir),
-	})
-}
-
 func read(path string) *string {
 	dir, _ := os.ReadDir(fmt.Sprintf("data/%s", path))
 	var back string
@@ -122,4 +99,27 @@ func read(path string) *string {
 	}
 
 	return arrToStr(files)
+}
+
+func MirrorWorker(ctx *gin.Context, path string) {
+	iPath := fmt.Sprintf("data/%s", path)
+	file, err := os.Stat(iPath)
+	if err != nil {
+		ctx.JSON(404, gin.H{
+			"status": 404,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	if !file.IsDir() {
+		ctx.FileAttachment(iPath, file.Name())
+		return
+	}
+
+	dir := read(path)
+	ctx.HTML(200, "index.html", gin.H{
+		"dir":     path,
+		"content": template.HTML(*dir),
+	})
 }

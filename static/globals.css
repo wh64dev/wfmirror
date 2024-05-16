@@ -6,7 +6,7 @@
 
 :root {
     --font-default: "Pretendard", serif;
-    --font-color: #cccccc;
+    --font-color: #ffffff;
 
     --background: #222222;
     --hover: #ffffff10;
@@ -28,6 +28,7 @@ html, body {
 
 a {
     text-decoration: none;
+    transition-duration: 300ms;
 }
 
 @media (max-width: 900px) {
@@ -38,7 +39,7 @@ a {
 
 @media (min-width: 901px) {
     #drop_zone {
-        padding: 0 20%;
+        padding: 0 100px;
     }
 }
 
@@ -48,6 +49,7 @@ a {
 }
 
 #drop_zone.dragover {
+    background-color: #00000050;
 }
 
 .file_list {
