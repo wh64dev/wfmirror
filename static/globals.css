@@ -1,0 +1,82 @@
+@font-face {
+    src: url("./fonts/Pretendard.woff2");
+    font-family: "Pretendard";
+    font-weight: 300;
+}
+
+:root {
+    --font-default: "Pretendard", serif;
+    --font-color: #cccccc;
+
+    --background: #222222;
+    --hover: #ffffff10;
+}
+
+* {
+    margin: 0 0;
+    padding: 0 0;
+    box-sizing: border-box;
+    color: var(--font-color);
+    font-family: var(--font-default);
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--background);
+}
+
+a {
+    text-decoration: none;
+}
+
+@media (max-width: 900px) {
+    #drop_zone {
+        padding: 0 0;
+    }
+}
+
+@media (min-width: 901px) {
+    #drop_zone {
+        padding: 0 20%;
+    }
+}
+
+#drop_zone {
+    width: 100%;
+    height: 70%;
+}
+
+#drop_zone.dragover {
+}
+
+.file_list {
+    width: 100%;
+    display: table;
+}
+
+.file_item {
+    width: 100%;
+    height: 30px;
+    padding: 0 20px;
+    display: table-row;
+}
+
+.file_item > * {
+    padding: 0 10px;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.file_name {
+    width: 60%;
+}
+
+.animated {
+    transition-duration: 300ms;
+}
+
+.animated:hover {
+    transition-duration: 300ms;
+    background-color: var(--hover);
+}

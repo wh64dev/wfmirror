@@ -2,23 +2,21 @@ package main
 
 import (
 	"log"
-	"text/template"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/wh64dev/wfcloud/routes"
 )
 
 func main() {
+	if _, err := os.ReadDir("./data"); err != nil {
+		_ = os.Mkdir("data", 0775)
+	}
+
 	app := gin.Default()
+	routes.New(app)
 
-	app.SetFuncMap(template.FuncMap{})
-	app.LoadHTMLGlob("static/*.html")
-
-	// action := app.Group("/action")
-	app.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(200, "index.html", gin.H{})
-	})
-
-	err := app.Run(":3000")
+	err := app.Run(":8080")
 	if err != nil {
 		log.Fatalln(err)
 	}
