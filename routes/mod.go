@@ -3,14 +3,15 @@ package routes
 import (
 	"fmt"
 	"html/template"
-	"log"
 
+	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
+	"github.com/wh64dev/wfcloud/auth"
 )
 
 func New(app *gin.Engine) {
 	app.SetFuncMap(template.FuncMap{})
-	app.LoadHTMLGlob("static/*.html")
+	app.LoadHTMLGlob("pages/*.html")
 	app.Static("/static", "./static")
 
 	action := app.Group("/action")
@@ -43,7 +44,7 @@ func New(app *gin.Engine) {
 	}
 
 	app.GET("/", func(ctx *gin.Context) {
-		MirrorWorker(ctx, "/")
+		DirWorker(ctx, "/")
 	})
 
 	app.GET("/:path/*child", func(ctx *gin.Context) {
@@ -54,6 +55,13 @@ func New(app *gin.Engine) {
 			path = fmt.Sprintf("%s%s", origin, child)
 		}
 
-		MirrorWorker(ctx, path)
+		if auth.CheckAuth(origin) {
+			ctx.HTML(401, "auth.html", gin.H{
+				"path": fmt.Sprintf("/%s", origin),
+			})
+			return
+		}
+
+		DirWorker(ctx, path)
 	})
 }

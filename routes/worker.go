@@ -20,13 +20,13 @@ type FileData struct {
 func arrToStr(arr []FileData) *string {
 	var str = ""
 	for _, i := range arr {
-		str += createElement(i.URL, i.Name, i.Size, i.Modified)
+		str += element(i.URL, i.Name, i.Size, i.Modified)
 	}
 
 	return &str
 }
 
-func createElement(path, name, size, modified string) string {
+func element(path, name, size, modified string) string {
 	return fmt.Sprintf(
 		`<a class="file_item animated" href=%s>
 			<p class="file_name">%s</p>
@@ -72,9 +72,9 @@ func read(path string) *string {
 	}
 
 	for _, file := range dir {
-		ph := fmt.Sprintf("/%s/%s", path, file.Name())
+		directory := fmt.Sprintf("/%s/%s", path, file.Name())
 		if path == "/" {
-			ph = fmt.Sprint(file.Name())
+			directory = fmt.Sprint(file.Name())
 		}
 
 		format := "01-02-2006 03:04"
@@ -91,7 +91,7 @@ func read(path string) *string {
 		}
 
 		files = append(files, FileData{
-			URL:      ph,
+			URL:      directory,
 			Name:     name,
 			Size:     size,
 			Modified: modified,
@@ -101,9 +101,9 @@ func read(path string) *string {
 	return arrToStr(files)
 }
 
-func MirrorWorker(ctx *gin.Context, path string) {
-	iPath := fmt.Sprintf("data/%s", path)
-	file, err := os.Stat(iPath)
+func DirWorker(ctx *gin.Context, path string) {
+	dir := fmt.Sprintf("data/%s", path)
+	file, err := os.Stat(dir)
 	if err != nil {
 		ctx.JSON(404, gin.H{
 			"status": 404,
@@ -113,13 +113,13 @@ func MirrorWorker(ctx *gin.Context, path string) {
 	}
 
 	if !file.IsDir() {
-		ctx.FileAttachment(iPath, file.Name())
+		ctx.FileAttachment(dir, file.Name())
 		return
 	}
 
-	dir := read(path)
+	str := read(path)
 	ctx.HTML(200, "index.html", gin.H{
 		"dir":     path,
-		"content": template.HTML(*dir),
+		"content": template.HTML(*str),
 	})
 }
