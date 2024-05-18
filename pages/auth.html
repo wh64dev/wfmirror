@@ -3,24 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/globals.css" />
+    <link rel="stylesheet" href="/static/auth.css" />
     <title>Auth Required</title>
 </head>
 <body>
-    <p id="path">{{ .path }}</p>
-    <p id="err"></p>
-    <form id="login" method="POST" for="/action/login">
-        <label>
-            Username
-            <input id="username" type="text" placeholder="username" />
-        </label>
-        <br />
-        <label>
-            Password
-            <input id="password" type="password" placeholder="password" />
-        </label>
-        <br />
-        <input type="submit" value="Login" />
-    </form>
+    <div class="container">
+        <h1>Auth Required</h1>
+        <div class="title">
+            <b><p id="path">{{ .path }}</p></b>
+            <p>디렉토리에 접속하기 위해서는 로그인이 필요 합니다</p>
+        </div>
+
+        <p id="err"></p>
+        <form id="login" method="POST" for="/action/login">
+            <div class="input_cont">
+                <label for="username">Username</label>
+                <div class="heap"></div>
+
+                <input id="username" name="username" type="text" placeholder="username" />
+            </div>
+            <div class="input_cont">
+                <label for="password">Password</label>
+                <div class="heap"></div>
+                
+                <input id="password" name="password" type="password" placeholder="password" />
+            </div>
+
+            <input type="submit" value="Login" />
+        </form>
+    </div>
 
     <script src="/static/login.js"></script>
 </body>

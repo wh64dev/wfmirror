@@ -14,7 +14,7 @@ type Claims struct {
 
 var (
 	exp     = 1 * time.Hour
-	privKey = []byte(os.Getenv("TOKEN"))
+	PrivKey = []byte(os.Getenv("TOKEN"))
 )
 
 func (acc *Account) GenToken() (string, error) {
@@ -27,5 +27,5 @@ func (acc *Account) GenToken() (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(privKey)
+	return token.SignedString(PrivKey)
 }

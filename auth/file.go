@@ -2,6 +2,7 @@ package auth
 
 import (
 	"os"
+	"strings"
 
 	"github.com/devproje/plog/log"
 	"github.com/wh64dev/wfcloud/util"
@@ -33,7 +34,7 @@ func CheckAuthGlobal() bool {
 func CheckAuth(dir string) bool {
 	res := queryDir()
 	for _, d := range res.Dirs {
-		if d.Directory == dir {
+		if strings.Contains(d.Directory, dir) {
 			return true
 		}
 	}

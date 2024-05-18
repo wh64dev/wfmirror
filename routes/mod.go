@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"html/template"
+	"time"
 
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
@@ -40,6 +41,45 @@ func New(app *gin.Engine) {
 				"count":   len(files),
 				"workdir": fmt.Sprintf("/%s", path),
 			})
+		})
+
+		action.POST("/login", func(ctx *gin.Context) {
+			var username, password string
+			var chk bool
+
+			username, chk = ctx.GetPostForm("password")
+			if !chk {
+				return
+			}
+
+			password, chk = ctx.GetPostForm("password")
+			if !chk {
+				return
+			}
+
+			acc := &auth.Account{
+				Username: username,
+				Password: password,
+			}
+
+			chk = acc.Login()
+			if !chk {
+				return
+			}
+
+			token, err := acc.GenToken()
+			if err != nil {
+				return
+			}
+
+			ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate, post-check=0, pre-cache=0, max-age=0")
+			ctx.Header("Last-Modified", time.Now().String())
+			ctx.Header("Pragma", "no-cache")
+			ctx.Header("Expires", "-1")
+
+			ctx.SetCookie("access-token", token, 1800, "", "", false, false)
+
+			ctx.Redirect(301, "/")
 		})
 	}
 
