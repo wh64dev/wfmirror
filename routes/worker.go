@@ -2,7 +2,6 @@ package routes
 
 import (
 	"fmt"
-	"html/template"
 	"os"
 	"strings"
 
@@ -17,35 +16,14 @@ type FileData struct {
 	Modified string
 }
 
-func arrToStr(arr []FileData) *string {
-	var str = ""
-	for _, i := range arr {
-		str += element(i.URL, i.Name, i.Size, i.Modified)
-	}
-
-	return &str
-}
-
-func element(path, name, size, modified string) string {
-	return fmt.Sprintf(
-		`<a class="file_item animated" href=%s>
-			<p class="file_name">%s</p>
-			<p>%s</p>
-			<p>%s</p>
-		</a>`,
-		path,
-		name,
-		size,
-		modified,
-	)
-}
-
-func read(path string) *string {
+func read(path string) []*FileData {
 	dir, _ := os.ReadDir(fmt.Sprintf("data/%s", path))
 	var back string
-	var files []FileData
+	var files []*FileData
 
-	if path != "/" {
+	defDir := ""
+
+	if path != defDir {
 		split := strings.Split(path, "/")
 		split = split[:len(split)-1]
 
@@ -63,7 +41,7 @@ func read(path string) *string {
 			back = "../"
 		}
 
-		files = append(files, FileData{
+		files = append(files, &FileData{
 			URL:      back,
 			Name:     "../",
 			Size:     "-",
@@ -73,7 +51,7 @@ func read(path string) *string {
 
 	for _, file := range dir {
 		directory := fmt.Sprintf("/%s/%s", path, file.Name())
-		if path == "/" {
+		if path == defDir {
 			directory = fmt.Sprint(file.Name())
 		}
 
@@ -90,7 +68,7 @@ func read(path string) *string {
 			size = util.FSize(float64(finfo.Size()))
 		}
 
-		files = append(files, FileData{
+		files = append(files, &FileData{
 			URL:      directory,
 			Name:     name,
 			Size:     size,
@@ -98,7 +76,7 @@ func read(path string) *string {
 		})
 	}
 
-	return arrToStr(files)
+	return files
 }
 
 func DirWorker(ctx *gin.Context, path string) {
@@ -117,9 +95,8 @@ func DirWorker(ctx *gin.Context, path string) {
 		return
 	}
 
-	str := read(path)
-	ctx.HTML(200, "index.html", gin.H{
-		"dir":     path,
-		"content": template.HTML(*str),
+	data := read(path)
+	ctx.JSON(200, gin.H{
+		"data": data,
 	})
 }
