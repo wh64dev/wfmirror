@@ -1,5 +1,10 @@
+# environment file
 .env
 !.env.sample
 
+# data directory
 data/
-wfconf/
+conf/
+
+# execute file
+wfmirror

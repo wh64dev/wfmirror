@@ -97,6 +97,7 @@ func DirWorker(ctx *gin.Context, path string) {
 
 	data := read(path)
 	ctx.JSON(200, gin.H{
+		"dir":  fmt.Sprintf("/%s", path),
 		"data": data,
 	})
 }
