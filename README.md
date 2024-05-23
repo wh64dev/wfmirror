@@ -10,6 +10,7 @@
     - digest login
     - jwt token authentication
     - account information will saved inner db file
+    - change account information feature
 - drag & drop
     - admin authentication required
     - just drag and drop file in current directory page
