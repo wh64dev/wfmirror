@@ -7,7 +7,6 @@
 
 ## Feature
 - account
-    - digest login
     - jwt token authentication
     - account information will saved inner db file
     - change account information feature

@@ -10,10 +10,10 @@ import (
 )
 
 type FileData struct {
-	URL      string
-	Name     string
-	Size     string
-	Modified string
+	URL      string `json:"url"`
+	Name     string `json:"name"`
+	Size     string `json:"size"`
+	Modified string `json:"modified"`
 }
 
 func read(path string) []*FileData {
@@ -61,8 +61,7 @@ func read(path string) []*FileData {
 		modified := finfo.ModTime().Format(format)
 		if file.IsDir() {
 			name = file.Name() + "/"
-			size = "-"
-			modified = "-"
+			size = util.FSize(float64(finfo.Size()))
 		} else {
 			name = file.Name()
 			size = util.FSize(float64(finfo.Size()))

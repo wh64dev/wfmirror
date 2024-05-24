@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/wh64dev/wfcloud/config"
 	"github.com/wh64dev/wfcloud/routes"
 )
 
@@ -36,17 +37,19 @@ func init() {
 }
 
 func main() {
+	co := config.Get()
 	app := gin.Default()
 	routes.New(app)
 
 	go frontend()
-	err := app.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+	err := app.Run(fmt.Sprintf(":%s", co.Port))
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func frontend() {
+	cnf := config.Get()
 	var action = []string{"start"}
 	if debug {
 		action = []string{"run", "dev"}
@@ -56,14 +59,17 @@ func frontend() {
 
 	command = append(command, action...)
 	command = append(command, "--hostname")
-	command = append(command, os.Getenv("FRONT_HOST"))
+	command = append(command, cnf.Frontend.Host)
 	command = append(command, "--port")
-	command = append(command, os.Getenv("FRONT_PORT"))
+	command = append(command, cnf.Frontend.Port)
 
 	process := exec.Command("pnpm", command...)
 	if errors.Is(process.Err, exec.ErrDot) {
 		process.Err = nil
 	}
+
+	process.Env = os.Environ()
+	process.Env = append(process.Env, fmt.Sprintf("SERVER_PORT=%s", cnf.Port))
 
 	process.Stdout = os.Stdout
 	process.Stderr = os.Stderr
