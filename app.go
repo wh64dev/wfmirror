@@ -37,19 +37,18 @@ func init() {
 }
 
 func main() {
-	co := config.Get()
+	cnf := config.Get()
 	app := gin.Default()
 	routes.New(app)
 
-	go frontend()
-	err := app.Run(fmt.Sprintf(":%s", co.Port))
+	go frontend(cnf)
+	err := app.Run(fmt.Sprintf(":%s", cnf.Port))
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func frontend() {
-	cnf := config.Get()
+func frontend(cnf *config.Config) {
 	var action = []string{"start"}
 	if debug {
 		action = []string{"run", "dev"}

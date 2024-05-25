@@ -13,6 +13,7 @@ type FileData struct {
 	URL      string `json:"url"`
 	Name     string `json:"name"`
 	Size     string `json:"size"`
+	Type     string `json:"type"`
 	Modified string `json:"modified"`
 }
 
@@ -44,6 +45,7 @@ func read(path string) []*FileData {
 		files = append(files, &FileData{
 			URL:      back,
 			Name:     "../",
+			Type:     "dir",
 			Size:     "-",
 			Modified: "-",
 		})
@@ -56,21 +58,24 @@ func read(path string) []*FileData {
 		}
 
 		format := "01-02-2006 03:04"
-		var name, size string
+		var name, size, ftype string
 		finfo, _ := file.Info()
 		modified := finfo.ModTime().Format(format)
 		if file.IsDir() {
 			name = file.Name() + "/"
 			size = util.FSize(float64(finfo.Size()))
+			ftype = "dir"
 		} else {
 			name = file.Name()
 			size = util.FSize(float64(finfo.Size()))
+			ftype = "file"
 		}
 
 		files = append(files, &FileData{
 			URL:      directory,
 			Name:     name,
 			Size:     size,
+			Type:     ftype,
 			Modified: modified,
 		})
 	}

@@ -11,14 +11,14 @@ type frontend struct {
 	Port string
 }
 
-type config struct {
+type Config struct {
 	Port     string
 	Frontend frontend
 	JWT      jwtOption
 }
 
-func Get() *config {
-	return &config{
+func Get() *Config {
+	return &Config{
 		Port: os.Getenv("PORT"),
 		Frontend: frontend{
 			Host: os.Getenv("FRONT_HOST"),

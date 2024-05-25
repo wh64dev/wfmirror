@@ -1,15 +1,17 @@
-export function render(name, size, raw, modified) {
+import Link from "next/link";
+
+export function render(name, size, raw, modified, type) {
     const backend = `http://localhost:${process.env.SERVER_PORT}`;
     let url = `${backend}/${raw}`;
-    if (raw.match(/[a-zA-Z0-9]+/g)) {
-        url = `/${raw}`;
+    if (type === "dir") {
+        url = `${raw}`;
     }
 
-    return <a href={url} key={"directory"}>
+    return <Link href={url} key={"directory"}>
         <p>{name}</p>
         <p>{size}</p>
         <p>{modified}</p>
-    </a>
+    </Link>
 }
 
 export async function Render({ data, url }) {
@@ -18,7 +20,7 @@ export async function Render({ data, url }) {
             <h2>{url}</h2>
             <div key={"directory"}>
                 {data.map(obj => {
-                    return render(obj.name, obj.size, obj.url, obj.modified);
+                    return render(obj.name, obj.size, obj.url, obj.modified, obj.type);
                 })}
             </div>
         </>

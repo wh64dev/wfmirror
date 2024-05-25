@@ -4,8 +4,10 @@ import { headers } from "next/headers";
 
 export default async function Page() {
     const header = headers();
-    console.log(header.get("x-pathname"));
-    const data = await getData(header.get("x-pathname"));
+    const path = header.get("x-current-path");
+    const data = await getData(path);
+
+    console.log(path);
 
     return (
         <main>
