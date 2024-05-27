@@ -7,8 +7,11 @@ import (
 func New(app *gin.Engine) {
 	worker := new(DirWorker)
 
-	app.POST("/mkdir/*dirname", worker.CreateDir)
-	app.POST("/upload/*dirname", worker.UploadFile)
-	app.GET("/download/*filepath", worker.DownloadFile)
-	app.GET("/files/*dirname", worker.ListFiles)
+	action := app.Group("/action")
+	{
+		action.POST("/mkdir/*dirname", worker.CreateDir)
+		action.POST("/upload/*dirname", worker.UploadFile)
+		action.GET("/download/*filepath", worker.DownloadFile)
+	}
+	app.GET("/f/*dirname", worker.ListFiles)
 }
