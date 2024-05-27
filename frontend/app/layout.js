@@ -1,4 +1,5 @@
 import "./globals.scss";
+import "bootstrap-icons/font/bootstrap-icons.scss";
 
 export const metadata = {
     title: "WH64's File Mirror",

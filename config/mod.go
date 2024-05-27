@@ -7,8 +7,9 @@ type jwtOption struct {
 }
 
 type frontend struct {
-	Host string
-	Port string
+	Host  string
+	Port  string
+	Title string
 }
 
 type Config struct {
@@ -21,8 +22,9 @@ func Get() *Config {
 	return &Config{
 		Port: os.Getenv("PORT"),
 		Frontend: frontend{
-			Host: os.Getenv("FRONT_HOST"),
-			Port: os.Getenv("FRONT_PORT"),
+			Host:  os.Getenv("FRONT_HOST"),
+			Port:  os.Getenv("FRONT_PORT"),
+			Title: os.Getenv("FRONT_TITLE"),
 		},
 		JWT: jwtOption{
 			os.Getenv("JWT_SECRET"),

@@ -1,107 +1,96 @@
 package routes
 
 import (
-	"fmt"
+	"net/http"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
-	"github.com/wh64dev/wfcloud/util"
 )
 
-type FileData struct {
-	URL      string `json:"url"`
-	Name     string `json:"name"`
-	Size     string `json:"size"`
-	Type     string `json:"type"`
-	Modified string `json:"modified"`
-}
+const uploadBaseDir = "data"
 
-func read(path string) []*FileData {
-	dir, _ := os.ReadDir(fmt.Sprintf("data/%s", path))
-	var back string
-	var files []*FileData
+type DirWorker struct{}
 
-	defDir := ""
+func (dw *DirWorker) CreateDir(ctx *gin.Context) {
+	dirname := ctx.Param("dirname")
+	if dirname == "/" || dirname == "/root" {
+		dirname = ""
+	}
+	dirPath := filepath.Join(uploadBaseDir, filepath.FromSlash(dirname))
 
-	if path != defDir {
-		split := strings.Split(path, "/")
-		split = split[:len(split)-1]
-
-		back = "/"
-		for i, p := range split {
-			if i == len(split)-1 {
-				back += p
-				break
-			}
-
-			back += fmt.Sprintf("%s/", p)
-		}
-
-		if back == "" {
-			back = "../"
-		}
-
-		files = append(files, &FileData{
-			URL:      back,
-			Name:     "../",
-			Type:     "dir",
-			Size:     "-",
-			Modified: "-",
-		})
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		ctx.String(http.StatusInternalServerError, "Could not create directory: %v", err)
+		return
 	}
 
-	for _, file := range dir {
-		directory := fmt.Sprintf("/%s/%s", path, file.Name())
-		if path == defDir {
-			directory = fmt.Sprint(file.Name())
-		}
-
-		format := "01-02-2006 03:04"
-		var name, size, ftype string
-		finfo, _ := file.Info()
-		modified := finfo.ModTime().Format(format)
-		if file.IsDir() {
-			name = file.Name() + "/"
-			size = util.FSize(float64(finfo.Size()))
-			ftype = "dir"
-		} else {
-			name = file.Name()
-			size = util.FSize(float64(finfo.Size()))
-			ftype = "file"
-		}
-
-		files = append(files, &FileData{
-			URL:      directory,
-			Name:     name,
-			Size:     size,
-			Type:     ftype,
-			Modified: modified,
-		})
-	}
-
-	return files
+	ctx.String(http.StatusOK, "Directory created successfully: %s", dirname)
 }
 
-func DirWorker(ctx *gin.Context, path string) {
-	dir := fmt.Sprintf("data/%s", path)
-	file, err := os.Stat(dir)
+func (dw *DirWorker) UploadFile(ctx *gin.Context) {
+	dirname := ctx.Param("dirname")
+	if dirname == "/" || dirname == "/root" {
+		dirname = ""
+	}
+	file, err := ctx.FormFile("file")
 	if err != nil {
-		ctx.JSON(404, gin.H{
-			"status": 404,
-			"error":  err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, "Bad request: %v", err)
 		return
 	}
 
-	if !file.IsDir() {
-		ctx.FileAttachment(dir, file.Name())
+	// Ensure the upload directory exists
+	uploadDir := filepath.Join(uploadBaseDir, filepath.FromSlash(dirname))
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		ctx.String(http.StatusInternalServerError, "Could not create upload directory: %v", err)
 		return
 	}
 
-	data := read(path)
-	ctx.JSON(200, gin.H{
-		"dir":  fmt.Sprintf("/%s", path),
-		"data": data,
+	// Save the uploaded file
+	filePath := filepath.Join(uploadDir, filepath.Base(file.Filename))
+	if err := ctx.SaveUploadedFile(file, filePath); err != nil {
+		ctx.String(http.StatusInternalServerError, "Could not save file: %v", err)
+		return
+	}
+
+	ctx.String(http.StatusOK, "File uploaded successfully: %s", file.Filename)
+}
+
+func (dw *DirWorker) DownloadFile(ctx *gin.Context) {
+	filePath := filepath.Join(uploadBaseDir, filepath.FromSlash(ctx.Param("filepath")))
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		ctx.String(http.StatusNotFound, "File not found: %s", ctx.Param("filepath"))
+		return
+	}
+
+	ctx.File(filePath)
+}
+
+func (dw *DirWorker) ListFiles(ctx *gin.Context) {
+	dirname := ctx.Param("dirname")
+	if dirname == "/" || dirname == "/root" {
+		dirname = ""
+	}
+	var files []string
+	uploadDir := filepath.Join(uploadBaseDir, filepath.FromSlash(dirname))
+
+	err := filepath.Walk(uploadDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			relativePath, err := filepath.Rel(uploadDir, path)
+			if err != nil {
+				return err
+			}
+			files = append(files, relativePath)
+		}
+		return nil
 	})
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, "Could not list files: %v", err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, files)
 }

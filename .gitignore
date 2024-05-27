@@ -4,7 +4,7 @@
 
 # data directory
 data/
-conf/
+temp/
 
 # execute file
 wfmirror
