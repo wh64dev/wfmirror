@@ -9,6 +9,6 @@ func New(app *gin.Engine) {
 
 	app.POST("/mkdir/*dirname", worker.CreateDir)
 	app.POST("/upload/*dirname", worker.UploadFile)
-	app.GET("/d/*filepath", worker.DownloadFile)
-	app.GET("/f/*dirname", worker.ListFiles)
+	app.GET("/f/*filepath", worker.DownloadFile)
+	app.GET("/d/*dirname", worker.ListFiles)
 }

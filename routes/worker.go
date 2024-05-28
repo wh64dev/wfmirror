@@ -74,13 +74,13 @@ func (dw *DirWorker) DownloadFile(ctx *gin.Context) {
 	path := ctx.Param("filepath")
 	filePath := filepath.Join(uploadBaseDir, filepath.FromSlash(path))
 
-	data, err := os.Stat(filePath)
+	_, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
 		ctx.String(http.StatusNotFound, "File not found: %s", ctx.Param("filepath"))
 		return
 	}
 
-	ctx.FileAttachment(filePath, data.Name())
+	ctx.File(filePath)
 }
 
 func (dw *DirWorker) ListFiles(ctx *gin.Context) {
@@ -90,7 +90,6 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 	}
 
 	baseDir := filepath.Join(uploadBaseDir, dirname)
-
 	var files []*FileData
 	file, err := os.Stat(baseDir)
 	if err != nil {
