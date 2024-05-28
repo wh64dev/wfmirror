@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -41,6 +45,81 @@ func main() {
 	app := gin.Default()
 	routes.New(app)
 
+	go serve(app, cnf) // run backend
+
+	var action = []string{"run", "dev"}
+	if !debug {
+		build(cnf)
+		action = []string{"start"}
+	}
+
+	command := []string{"-C", "./frontend"}
+
+	command = append(command, action...)
+	command = append(command, "--hostname")
+	command = append(command, cnf.Frontend.Host)
+	command = append(command, "--port")
+	command = append(command, cnf.Frontend.Port)
+
+	process := exec.Command("pnpm", command...)
+	if errors.Is(process.Err, exec.ErrDot) {
+		process.Err = nil
+	}
+
+	process.Env = os.Environ()
+	process.Env = append(process.Env, fmt.Sprintf("SERVER_PORT=%s", cnf.Port))
+	process.Env = append(process.Env, fmt.Sprintf("FRONT_TITLE=%s", cnf.Frontend.Title))
+
+	process.Stdout = os.Stdout
+	process.Stderr = os.Stderr
+
+	if err := process.Run(); err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("Frontend is now running. Press CTRL-C to exit.")
+
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
+
+	process.Cancel()
+}
+
+func build(cnf *config.Config) {
+	fmt.Println("create next.js env file")
+	os.Chdir("./frontend")
+	file, err := os.Create(".env")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = file.Write([]byte(fmt.Sprintf("SERVER_PORT=%s\nFRONT_TITLE=%s\n", cnf.Port, cnf.Frontend.Title)))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println("build next.js source...")
+	process := exec.Command("pnpm", "build")
+	if errors.Is(process.Err, exec.ErrDot) {
+		process.Err = nil
+	}
+
+	process.Stdout = os.Stdout
+	process.Stderr = os.Stderr
+
+	if err := process.Run(); err != nil {
+		os.Remove(".env")
+		os.Chdir("../")
+		log.Fatalln(err)
+	}
+
+	os.Remove(".env")
+	os.Chdir("../")
+}
+
+func serve(app *gin.Engine, cnf *config.Config) {
+	fmt.Printf("Service bind port at %s\n", cnf.Port)
 	err := app.Run(fmt.Sprintf(":%s", cnf.Port))
 	if err != nil {
 		log.Fatalln(err)
