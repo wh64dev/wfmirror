@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/util"
@@ -81,10 +80,6 @@ func (dw *DirWorker) DownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	if data.IsDir() {
-		ctx.Redirect(301, fmt.Sprintf("/f/%s", strings.Replace(path, "data/", "", 1)))
-	}
-
 	ctx.FileAttachment(filePath, data.Name())
 }
 
@@ -123,8 +118,10 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 		}
 
 		url := fmt.Sprintf("%s%s", dirname, entry.Name())
-		if dirname[:len(dirname)-1] != "/" {
-			url = fmt.Sprintf("%s/%s", dirname, entry.Name())
+		if dirname != "" {
+			if dirname[:len(dirname)-1] != "/" {
+				url = fmt.Sprintf("%s/%s", dirname, entry.Name())
+			}
 		}
 		files = append(files, &FileData{
 			URL:      url,

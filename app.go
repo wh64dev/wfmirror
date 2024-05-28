@@ -16,10 +16,14 @@ import (
 	"github.com/wh64dev/wfcloud/routes"
 )
 
-var debug bool
+var (
+	debug  bool
+	single bool
+)
 
 func init() {
 	flag.BoolVar(&debug, "D", false, "debug mode")
+	flag.BoolVar(&single, "S", false, "run backend only")
 	flag.Parse()
 
 	if !debug {
@@ -44,6 +48,11 @@ func main() {
 	cnf := config.Get()
 	app := gin.Default()
 	routes.New(app)
+
+	if single {
+		serve(app, cnf)
+		return
+	}
 
 	go serve(app, cnf) // run backend
 
