@@ -27,16 +27,16 @@ func CheckPriv(ctx *gin.Context) {
 		return
 	}
 
-	// row, err := prep.Query(path)
-	// if err != nil {
-	// 	return
-	// }
-
 	var data privdir
 	row := prep.QueryRow()
 	err = row.Scan(&data.Id, &data.Path)
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return
+		}
+
 		ctx.String(500, "Database Error")
+		log.Errorln(err)
 		ctx.Abort()
 		return
 	}
@@ -47,23 +47,6 @@ func CheckPriv(ctx *gin.Context) {
 		ctx.String(401, "Unauthorized")
 		return
 	}
-
-	// for row.Next() {
-	// 	var data privdir
-	// 	err = row.Scan(&data.Id, &data.Path)
-	// 	if err != nil {
-	// 		continue
-	// 	}
-
-	// 	ctx.String(200, path+" "+data.Path)
-	// 	if strings.Contains(path, data.Path) {
-	// 		// ctx.String(401, "Unauthorized")
-	// 		ctx.Abort()
-	// 		return
-	// 	}
-
-	// 	ctx.Abort()
-	// }
 
 	database.Close(db)
 }

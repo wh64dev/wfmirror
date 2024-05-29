@@ -86,7 +86,7 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 	}
 
 	if !file.IsDir() {
-		ctx.Redirect(301, fmt.Sprintf("/d/%s", dirname))
+		ctx.Redirect(301, fmt.Sprintf("/f/%s", dirname))
 		return
 	}
 

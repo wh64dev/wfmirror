@@ -7,9 +7,16 @@ import (
 
 func New(app *gin.Engine) {
 	worker := new(DirWorker)
+	authentication := new(Auth)
+
 	app.Use(middleware.CheckPriv)
 
 	app.GET("/f/*filepath", worker.RawFiles)
 	app.GET("/path/*dirname", worker.ListFiles)
 	app.POST("/upload/*dirname", worker.UploadFile)
+
+	auth := app.Group("/auth")
+	{
+		auth.POST("/login", authentication.Login)
+	}
 }
