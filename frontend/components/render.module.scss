@@ -16,15 +16,9 @@
     display: flex;
     padding: 0 10px;
     align-items: center;
-    transition-duration: 300ms;
-
-    &:hover {
-        transition-duration: 300ms;
-        background-color: var(--hover-color);
-    }
 }
 
-.lock {
+.dir {
     width: 50px;
     height: 50px;
     display: flex;
@@ -34,6 +28,10 @@
 
 .name {
     width: 60%;
+}
+
+.name_item:hover {
+    text-decoration: underline;
 }
 
 .size {

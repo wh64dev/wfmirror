@@ -4,16 +4,17 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
 
+	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/wh64dev/wfcloud/config"
 	"github.com/wh64dev/wfcloud/routes"
+	"github.com/wh64dev/wfcloud/util/database"
 )
 
 var (
@@ -42,11 +43,16 @@ func init() {
 	if _, err = os.ReadDir("./temp"); err != nil {
 		_ = os.Mkdir("temp", 0775)
 	}
+
+	if _, err = os.ReadFile("./temp/private.db"); err != nil {
+		_, _ = os.Create("temp/private.db")
+	}
 }
 
 func main() {
 	cnf := config.Get()
 	app := gin.Default()
+	database.Init()
 	routes.New(app)
 
 	if single {

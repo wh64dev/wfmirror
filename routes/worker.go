@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/util"
@@ -22,26 +23,11 @@ const (
 )
 
 type FileData struct {
-	URL      string
-	Name     string
-	Size     string
-	Type     string
-	Modified string
-}
-
-func (dw *DirWorker) CreateDir(ctx *gin.Context) {
-	dirname := ctx.Param("dirname")
-	if dirname == "/" || dirname == "/root" {
-		dirname = ""
-	}
-	dirPath := filepath.Join(uploadBaseDir, filepath.FromSlash(dirname))
-
-	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
-		ctx.String(http.StatusInternalServerError, "Could not create directory: %v", err)
-		return
-	}
-
-	ctx.String(http.StatusOK, "Directory created successfully: %s", dirname)
+	URL      string `json:"url"`
+	Name     string `json:"name"`
+	Size     string `json:"size"`
+	Type     string `json:"type"`
+	Modified string `json:"modified"`
 }
 
 func (dw *DirWorker) UploadFile(ctx *gin.Context) {
@@ -70,7 +56,7 @@ func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "File uploaded successfully: %s", file.Filename)
 }
 
-func (dw *DirWorker) DownloadFile(ctx *gin.Context) {
+func (dw *DirWorker) RawFiles(ctx *gin.Context) {
 	path := ctx.Param("filepath")
 	filePath := filepath.Join(uploadBaseDir, filepath.FromSlash(path))
 
@@ -80,17 +66,19 @@ func (dw *DirWorker) DownloadFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.File(filePath)
+	_, file := filepath.Split(path)
+	ctx.FileAttachment(filePath, file)
 }
 
 func (dw *DirWorker) ListFiles(ctx *gin.Context) {
+	var start = time.Now()
 	var dirname = ctx.Param("dirname")
 	if dirname == "/" || dirname == "/root" {
 		dirname = ""
 	}
 
 	baseDir := filepath.Join(uploadBaseDir, dirname)
-	var files []*FileData
+	var directory []*FileData
 	file, err := os.Stat(baseDir)
 	if err != nil {
 		ctx.Status(404)
@@ -108,20 +96,32 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 		return
 	}
 
+	var files []*FileData
 	for _, entry := range entries {
 		format := "01-02-2006 03:04"
 		finfo, _ := entry.Info()
 		ftype := FILE
-		if entry.IsDir() {
-			ftype = DIR
-		}
-
 		url := fmt.Sprintf("%s%s", dirname, entry.Name())
 		if dirname != "" {
 			if dirname[:len(dirname)-1] != "/" {
 				url = fmt.Sprintf("%s/%s", dirname, entry.Name())
 			}
 		}
+
+		if entry.IsDir() {
+			ftype = DIR
+
+			directory = append(directory, &FileData{
+				URL:      url,
+				Name:     entry.Name(),
+				Size:     util.FSize(float64(finfo.Size())),
+				Type:     string(ftype),
+				Modified: finfo.ModTime().Format(format),
+			})
+
+			continue
+		}
+
 		files = append(files, &FileData{
 			URL:      url,
 			Name:     entry.Name(),
@@ -131,8 +131,10 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 		})
 	}
 
+	directory = append(directory, files...)
 	ctx.JSON(http.StatusOK, gin.H{
-		"dir":  dirname,
-		"data": files,
+		"dir":          dirname,
+		"data":         directory,
+		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
 	})
 }
