@@ -10,6 +10,8 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
         "bootstrap-icons": "^1.11.3",
         "next": "14.3.0-canary.82",
         "react": "^19.0.0-rc-935180c7e0-20240524",
