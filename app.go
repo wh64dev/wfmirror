@@ -44,8 +44,8 @@ func init() {
 		_ = os.Mkdir("temp", 0775)
 	}
 
-	if _, err = os.ReadFile("./temp/private.db"); err != nil {
-		_, _ = os.Create("temp/private.db")
+	if _, err = os.ReadFile("./temp/service.db"); err != nil {
+		_, _ = os.Create("temp/service.db")
 	}
 }
 

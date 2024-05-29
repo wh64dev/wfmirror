@@ -33,7 +33,7 @@ func Init() {
 }
 
 func Open() *sql.DB {
-	db, err := sql.Open("sqlite3", "./temp/private.db")
+	db, err := sql.Open("sqlite3", "./temp/service.db")
 	if err != nil {
 		log.Errorln(err)
 		return nil
