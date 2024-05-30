@@ -1,9 +1,6 @@
 package routes
 
 import (
-	"strings"
-
-	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -11,15 +8,16 @@ import (
 type Auth struct{}
 
 func (a *Auth) Login(ctx *gin.Context) {
-	username := ctx.Param("username")
-	password := ctx.Param("password")
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
 
 	id := uuid.New()
-	log.Debugf("username: %s password: %s", username, strings.ReplaceAll(password, "", "*"))
 
 	ctx.JSON(200, gin.H{
-		"ok":     1,
-		"status": 200,
-		"id":     id.String(),
+		"ok":       1,
+		"status":   200,
+		"id":       id.String(),
+		"username": username,
+		"password": password,
 	})
 }
