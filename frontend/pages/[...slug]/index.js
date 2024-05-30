@@ -1,6 +1,10 @@
 import Head from "next/head";
+import { getData } from "@/util/route";
 import localFont from "next/font/local";
-import styles from "@/styles/Home.module.scss";
+import { Render } from "@/components/Render";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import styles from "@/styles/Dir.module.scss";
 
 const pretendard = localFont({
     src: "../fonts/Pretendard.woff2",
@@ -8,7 +12,7 @@ const pretendard = localFont({
     weight: "300",
 });
 
-export default function Home() {
+export default function Slug({ name, data }) {
     return (
         <>
             <Head>
@@ -18,10 +22,36 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <div className={`${styles.page} ${pretendard.variable}`}>
+                <Header name={name} />
                 <main className={styles.main}>
-                    <h1>Hello, World!</h1>
+                    <Render data={data.data} url={data.dir} />
                 </main>
+                <Footer />
             </div>
         </>
     );
+}
+
+export async function getServerSideProps(context) {
+    const name = process.env.FRONT_TITLE;
+    const data = await getData(context.resolvedUrl);
+
+    if (data.status === 401) {
+        return {
+            redirect: {
+                destination: data.dest,
+                permanent: false
+            }
+        };
+    }
+
+    if (data.status === 404) {
+        return {
+            notFound: true
+        };
+    }
+
+    return {
+        props: { name, data }
+    };
 }

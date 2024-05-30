@@ -1,5 +1,5 @@
 import Link from "next/link";
-import style from "./render.module.scss";
+import style from "@/styles/Render.module.scss";
 
 const entry = ({ name, size, raw, modified, type }) => {
     return {
