@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/devproje/plog/log"
@@ -18,11 +17,14 @@ func CheckPriv(ctx *gin.Context) {
 	path := ctx.Request.URL.Path
 
 	db := database.Open()
+	defer database.Close(db)
+
 	stmt := `select * from privdir;`
 
 	prep, err := db.Prepare(stmt)
 	if err != nil {
-		ctx.String(500, fmt.Sprintf("Internal Server Error\n%s\n", err))
+		ctx.String(500, "Internal Server Error")
+		log.Errorln(err)
 		ctx.Abort()
 		return
 	}
@@ -41,12 +43,9 @@ func CheckPriv(ctx *gin.Context) {
 		return
 	}
 
-	log.Infoln(path, data.Path)
 	if strings.Contains(path, data.Path) {
 		ctx.Abort()
 		ctx.String(401, "Unauthorized")
 		return
 	}
-
-	database.Close(db)
 }

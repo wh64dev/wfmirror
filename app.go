@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/devproje/plog"
+	"github.com/devproje/plog/level"
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -27,7 +29,10 @@ func init() {
 	flag.BoolVar(&single, "S", false, "run backend only")
 	flag.Parse()
 
+	log.SetLevel(level.Info)
+
 	if !debug {
+		log.SetLevel(level.Trace)
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -85,6 +90,7 @@ func main() {
 	process.Env = append(process.Env, fmt.Sprintf("SERVER_PORT=%s", cnf.Port))
 	process.Env = append(process.Env, fmt.Sprintf("FRONT_TITLE=%s", cnf.Frontend.Title))
 
+	log.SetOutput(os.Stdout)
 	process.Stdout = os.Stdout
 	process.Stderr = os.Stderr
 
@@ -102,6 +108,12 @@ func main() {
 }
 
 func build(cnf *config.Config) {
+	front := plog.New()
+	front.Level = level.Info
+	if debug {
+		front.Level = level.Trace
+	}
+
 	fmt.Println("create next.js env file")
 	os.Chdir("./frontend")
 	file, err := os.Create(".env")
@@ -120,13 +132,11 @@ func build(cnf *config.Config) {
 		process.Err = nil
 	}
 
-	process.Stdout = os.Stdout
-	process.Stderr = os.Stderr
-
+	front.SetOutput(process.Stdout)
 	if err := process.Run(); err != nil {
 		os.Remove(".env")
 		os.Chdir("../")
-		log.Fatalln(err)
+		front.Fatalln(err)
 	}
 
 	os.Remove(".env")
