@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 type jwtOption struct {
 	JWTToken string
@@ -13,12 +16,16 @@ type frontend struct {
 }
 
 type Config struct {
-	Port     string
-	Frontend frontend
-	JWT      jwtOption
+	Port        string
+	AllowOrigin string
+	HashCount   int
+	Frontend    frontend
+	JWT         jwtOption
 }
 
 func Get() *Config {
+	hc, _ := strconv.ParseInt(os.Getenv("HASH_COUNT"), 10, 32)
+
 	return &Config{
 		Port: os.Getenv("PORT"),
 		Frontend: frontend{
@@ -26,6 +33,8 @@ func Get() *Config {
 			Port:  os.Getenv("FRONT_PORT"),
 			Title: os.Getenv("FRONT_TITLE"),
 		},
+		AllowOrigin: os.Getenv("ALLOW_ORIGIN"),
+		HashCount:   int(hc),
 		JWT: jwtOption{
 			os.Getenv("JWT_SECRET"),
 		},

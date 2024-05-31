@@ -39,8 +39,8 @@ export async function getServerSideProps(context) {
     if (data.status === 401) {
         return {
             redirect: {
-                destination: data.dest,
-                permanent: false
+                destination: "login",
+                permanent: true
             }
         };
     }

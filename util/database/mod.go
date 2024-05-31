@@ -9,24 +9,35 @@ import (
 
 func Init() {
 	db := Open()
-	stmt := `create table if not exists privdir(
+	var stmts []string
+
+	stmts = append(stmts, `create table if not exists privdir(
 		id   integer not null,
 		path text,
 		primary key(id)
-	);`
+	);`)
 
-	prep, err := db.Prepare(stmt)
-	if err != nil {
-		log.Errorln(err)
-		Close(db)
-		return
-	}
+	stmts = append(stmts, `create table if not exists account(
+		id  	 varchar not null,
+		username varchar not null unique,
+		password varchar not null,
+		primary key(id)
+	)`)
 
-	_, err = prep.Exec()
-	if err != nil {
-		log.Errorln(err)
-		Close(db)
-		return
+	for _, stmt := range stmts {
+		prep, err := db.Prepare(stmt)
+		if err != nil {
+			log.Errorln(err)
+			Close(db)
+			return
+		}
+
+		_, err = prep.Exec()
+		if err != nil {
+			log.Errorln(err)
+			Close(db)
+			return
+		}
 	}
 
 	Close(db)

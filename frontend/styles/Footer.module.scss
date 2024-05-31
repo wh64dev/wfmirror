@@ -1,4 +1,6 @@
 .footer {
-    position: fixed;
+    left: 50%;
     bottom: 20px;
+    position: fixed;
+    transform: translate(-50%, 0);
 }

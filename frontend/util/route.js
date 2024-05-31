@@ -8,8 +8,7 @@ export async function getData(dir) {
     if (!res.ok) {
         if (res.status == 401) {
             return {
-                status: 401,
-                dest: "/login"
+                status: 401
             };
         }
 

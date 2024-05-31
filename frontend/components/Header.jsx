@@ -7,5 +7,5 @@ export function Header({ name }) {
                 <h1>{name}</h1>
             </div>
         </nav>
-    )
+    );
 }

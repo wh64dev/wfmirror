@@ -9,6 +9,7 @@ func New(app *gin.Engine) {
 	worker := new(DirWorker)
 	authentication := new(Auth)
 
+	app.Use(middleware.CORS)
 	app.Use(middleware.CheckPriv)
 
 	app.GET("/f/*filepath", worker.RawFiles)

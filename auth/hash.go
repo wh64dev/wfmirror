@@ -1,6 +1,8 @@
 package auth
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"golang.org/x/crypto/bcrypt"
+)
 
 func Hash(password string) string {
 	pwd, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
