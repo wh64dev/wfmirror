@@ -58,7 +58,7 @@ func (acc *AccountData) Verifier(token string) (*Claims, error) {
 	}
 
 	if !ref.Valid {
-		return nil, errors.New("not valid token")
+		return nil, errors.New("invalid token")
 	}
 
 	return &claims, nil
