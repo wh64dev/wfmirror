@@ -6,7 +6,7 @@ import (
 )
 
 type jwtOption struct {
-	JWTToken string
+	Secret string
 }
 
 type frontend struct {
