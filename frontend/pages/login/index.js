@@ -1,7 +1,7 @@
 import style from "@/styles/Login.module.scss";
 import { createRef } from "react";
 
-export default function Login({ title, port }) {
+export default function Login({ title }) {
     const username = createRef();
     const password = createRef();
     const err = createRef();
@@ -12,23 +12,17 @@ export default function Login({ title, port }) {
         formData.append("username", username.current.value);
         formData.append("password", password.current.value);
 
-        const res = await fetch(`http://localhost:${port}/auth/login`, {
+        const res = await fetch("/api/auth", {
             method: "post",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams(formData)
+            body: formData
         });
 
-        const obj = await res.json();
-        if (obj.status !== 200) {
+        if (res.status !== 200) {
             err.current.value = "username or password not matches";
-            return
+            return;
         }
-        
 
-        console.log(res.headers);
-        console.log(obj);
+        console.log(res);
     };
 
     return (
@@ -47,9 +41,8 @@ export default function Login({ title, port }) {
 
 export async function getServerSideProps() {
     const title = process.env.FRONT_TITLE;
-    const port = process.env.SERVER_PORT;
 
     return {
-        props: { title, port }
+        props: { title }
     };
 }
