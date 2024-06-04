@@ -11,7 +11,13 @@ func (as *AuthService) Login(ctx *gin.Context) {
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
 
-	if username != "root" || password != "asdf1234!" { // TODO: example
+	authData := &auth.AuthForm{
+		Username: username,
+		Password: password,
+	}
+
+	acc, err := authData.Login()
+	if err != nil {
 		ctx.JSON(401, gin.H{
 			"ok":     0,
 			"status": 401,
@@ -19,11 +25,6 @@ func (as *AuthService) Login(ctx *gin.Context) {
 		})
 
 		return
-	}
-
-	acc := auth.AccountData{
-		Id:       "wheel",
-		Username: "root",
 	}
 
 	token, err := acc.GenToken()
@@ -37,9 +38,11 @@ func (as *AuthService) Login(ctx *gin.Context) {
 		return
 	}
 
+	ctx.Header("Authorization", *token)
 	ctx.JSON(200, gin.H{
-		"ok":     1,
-		"status": 200,
-		"token":  *token,
+		"ok":      1,
+		"status":  200,
+		"user_id": acc.Id,
+		"token":   *token,
 	})
 }

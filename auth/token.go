@@ -9,11 +9,6 @@ import (
 	"github.com/wh64dev/wfcloud/config"
 )
 
-type AccountData struct {
-	Id       string
-	Username string
-}
-
 type Claims struct {
 	TokenID  string `json:"token"`
 	UserID   string `json:"user_id"`
@@ -21,7 +16,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func (acc *AccountData) GenToken() (*string, error) {
+func (acc *Account) GenToken() (*string, error) {
 	cnf := config.Get()
 	claims := Claims{
 		TokenID:  uuid.NewString(),

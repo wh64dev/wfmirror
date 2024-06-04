@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/devproje/plog"
@@ -14,9 +16,11 @@ import (
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/wh64dev/wfcloud/auth"
 	"github.com/wh64dev/wfcloud/config"
 	"github.com/wh64dev/wfcloud/routes"
 	"github.com/wh64dev/wfcloud/util/database"
+	"golang.org/x/term"
 )
 
 var (
@@ -54,10 +58,57 @@ func init() {
 	}
 }
 
+func task() {
+	accounts := auth.QueryAll()
+	if len(accounts) > 0 {
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+
+	// Read Username
+	fmt.Print("Enter Username: ")
+	username, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Read password
+	fmt.Print("Enter Password: ")
+	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println()
+
+	fmt.Print("Enter Password one more time: ")
+	pwCompare, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println()
+
+	if string(bytePassword) != string(pwCompare) {
+		log.Fatalln("typed password not compared")
+	}
+
+	acc := &auth.Account{
+		Username: strings.TrimSpace(username),
+		Password: string(bytePassword),
+	}
+
+	if err = acc.New(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func main() {
 	cnf := config.Get()
 	app := gin.Default()
 	database.Init()
+	task()
 
 	routes.New(app)
 

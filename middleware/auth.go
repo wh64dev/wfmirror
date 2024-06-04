@@ -16,7 +16,6 @@ type privdir struct {
 
 func CheckPriv(ctx *gin.Context) {
 	path := ctx.Request.URL.Path
-	// cnf := config.Get()
 
 	db := database.Open()
 	defer database.Close(db)
