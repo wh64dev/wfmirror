@@ -34,9 +34,10 @@ export default function Root({ name, data }) {
 
 export async function getServerSideProps() {
     const name = process.env.FRONT_TITLE;
+    const port = process.env.SERVER_PORT;
     const data = await getData("/");
 
     return {
-        props: { name, data }
+        props: { name, data, port }
     };
 }

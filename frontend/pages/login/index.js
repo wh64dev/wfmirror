@@ -4,32 +4,40 @@ import { createRef } from "react";
 export default function Login({ title }) {
     const username = createRef();
     const password = createRef();
-    const err = createRef();
+    // const err = createRef();
 
-    const login = async (ev) => {
-        ev.preventDefault();
-        const formData = new FormData();
-        formData.append("username", username.current.value);
-        formData.append("password", password.current.value);
+    // const login = async (ev) => {
+    //     ev.preventDefault();
 
-        const res = await fetch("/api/auth", {
-            method: "post",
-            body: formData
-        });
+    //     const obj = {
+    //         username: username.current.value,
+    //         password: password.current.value
+    //     };
+        
+    //     const res = await fetch("/api/auth", {
+    //         method: "post",
+    //         body: JSON.stringify(obj)
+    //     });
 
-        if (res.status !== 200) {
-            err.current.value = "username or password not matches";
-            return;
-        }
+    //     username.current.value = "";
+    //     password.current.value = "";
 
-        console.log(res);
-    };
+    //     if (res.status !== 200) {
+    //         err.current.innerText = "username or password not matches";
+    //         return;
+    //     }
+
+    //     err.current.innerText = "";
+
+    //     console.log(res);
+    //     // window.location.href = "/";
+    // };
 
     return (
         <main className={style.main}>
-            <form className={style.form} onSubmit={login}>
+            <form className={style.form} action={"/api/auth"} method="POST">
                 <h1 className={style.title}>{title} Login</h1>
-                <p ref={err}></p>
+                {/* <p className={style.err_msg} ref={err}></p> */}
                 <input className={style.input} type="text" placeholder="Username" ref={username} required />
                 <input className={style.input} type="password" placeholder="Password" ref={password} required />
                 
@@ -39,8 +47,16 @@ export default function Login({ title }) {
     );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
     const title = process.env.FRONT_TITLE;
+    if (context.res.getHeader("Authorization") !== undefined) {
+        return {
+            redirect: {
+                distination: "/",
+                permanent: true
+            }
+        };
+    }
 
     return {
         props: { title }

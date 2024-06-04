@@ -1,9 +1,9 @@
 import Link from "next/link";
 import style from "@/styles/Render.module.scss";
 
-const entry = ({ name, size, raw, modified, type }) => {
+const entry = ({ name, size, url, modified, type }) => {
     return {
-        raw: raw,
+        url: url,
         name: name,
         size: size,
         type: type,
@@ -11,20 +11,20 @@ const entry = ({ name, size, raw, modified, type }) => {
     };
 };
 
-export function render(obj, key) {
-    const backend = `http://localhost:${process.env.SERVER_PORT}`;
+export function render(obj, key, port) {
+    const backend = `http://localhost:${port}`;
     
     let symbol = "";
     let name = obj.name
-    let url = `${backend}/f/${obj.raw}`;
+    let url = `${backend}/f${obj.url}`;
     if (obj.type === "dir") {
-        url = `${obj.raw}`;
+        url = `${obj.url}`;
         name = `${obj.name}/`
         symbol = ` bi bi-folder-fill`;
     }
 
     return (
-        <div className={style.entry} href={url} key={key}>
+        <div className={style.entry} key={key}>
             <i className={`${style.dir}${symbol}`}></i>
             <p className={style.name}>
                 <Link href={url} className={style.name_item}>{name}</Link>
@@ -35,7 +35,7 @@ export function render(obj, key) {
     );
 }
 
-export function Render({ data, url }) {
+export function Render({ data, url, port }) {
     let ref = "/";
     let back = <></>;
 
@@ -66,12 +66,12 @@ export function Render({ data, url }) {
                 {back}
                 {data.map((obj, index) => {
                     return render(entry({
-                        raw: obj.url,
+                        url: obj.url,
                         name: obj.name,
                         size: obj.size,
                         type: obj.type,
                         modified: obj.modified
-                    }), index);
+                    }), index, port);
                 })}
             </div>
         </>

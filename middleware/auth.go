@@ -5,6 +5,7 @@ import (
 
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
+	"github.com/wh64dev/wfcloud/auth"
 	"github.com/wh64dev/wfcloud/util/database"
 )
 
@@ -45,8 +46,31 @@ func CheckPriv(ctx *gin.Context) {
 	}
 
 	if strings.Contains(path, data.Path) {
-		ctx.String(401, "Auth module not provided")
-		ctx.Abort()
+		token := strings.ReplaceAll(ctx.GetHeader("Authorization"), "Bearer ", "")
+		if token == "" {
+			ctx.JSON(401, gin.H{
+				"ok":     0,
+				"status": 401,
+				"errno":  "token not found in your browser",
+			})
+
+			ctx.Abort()
+			return
+		}
+
+		_, err := auth.Verifier(token)
+		if err != nil {
+			ctx.JSON(401, gin.H{
+				"ok":     0,
+				"status": 401,
+				"errno":  err.Error(),
+			})
+
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
 		return
 	}
 }

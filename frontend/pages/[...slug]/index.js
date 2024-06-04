@@ -12,7 +12,7 @@ const pretendard = localFont({
     weight: "300",
 });
 
-export default function Slug({ name, data }) {
+export default function Slug({ name, data, port }) {
     return (
         <>
             <Head>
@@ -24,7 +24,7 @@ export default function Slug({ name, data }) {
             <div className={`${styles.page} ${pretendard.variable}`}>
                 <Header name={name} />
                 <main className={styles.main}>
-                    <Render data={data.data} url={data.dir} />
+                    <Render data={data.data} url={data.dir} port={port} />
                 </main>
                 <Footer />
             </div>
@@ -34,7 +34,9 @@ export default function Slug({ name, data }) {
 
 export async function getServerSideProps(context) {
     const name = process.env.FRONT_TITLE;
-    const data = await getData(context.resolvedUrl);
+    const port = process.env.SERVER_PORT;
+    const token = context.res.getHeader("Authorization");
+    const data = await getData(context.resolvedUrl, token);
 
     if (data.status === 401) {
         return {
@@ -52,6 +54,6 @@ export async function getServerSideProps(context) {
     }
 
     return {
-        props: { name, data }
+        props: { name, data, port }
     };
 }
