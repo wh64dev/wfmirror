@@ -1,38 +1,46 @@
-import { NextRequest, NextResponse } from "next/server";
+export const config = {
+    api: {
+        bodyParser: {
+            externalResolver: true
+        }
+    }
+};
 
 /**
- * @param {NextRequest} req
- * @param {NextResponse} res
+ * @param { import("next").NextApiRequest } req
+ * @param { import("next").NextApiResponse } res
  */
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         res.setHeader("Allow", ["POST"]);
         
-        res.status = 405;
-        return res.send(`Method ${req.method} Not Allowed`);
+        res.statusCode = 405;
+        return res.end(`Method ${req.method} Not Allowed`);
     }
 
-    console.log(req);
-    // const formData = req.body();
-    // console.log(formData);
+    const { username, password } = req.body;
+    const form = new URLSearchParams();
 
-    // const resp = await fetch(`http://localhost:${process.env.SERVER_PORT}/auth/login`, {
-    //     method: "post",
-    //     headers: {
-    //         "Content-Type": "application/x-www-form-urlencoded",
-    //     },
-    //     body: new URLSearchParams(formData)
-    // });
+    form.append("username", username);
+    form.append("password", password);
 
-    // const obj = await resp.json();
-    // if (obj.status !== 200) {
-    //     res.status = 401;
-    //     return res.send("credential information not matches");
-    // }
+    const resp = await fetch(`http://localhost:${process.env.SERVER_PORT}/auth/login`, {
+        method: "post",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: form
+    });
 
-    // const token = obj.token;
-    // res.status = 200;
-    // res.setHeader("Authorization", token);
+    const obj = await resp.json();
+    if (obj.status !== 200) {
+        res.statusCode = 401;
+        return res.end("credential information not matches");
+    }
 
-    // return res.send("login success!").redirect("/");
+    const token = obj.token;
+    res.statusCode = 200;
+    res.setHeader("Authorization", token);
+
+    res.redirect(307, "/");
 }

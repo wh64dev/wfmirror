@@ -38,8 +38,8 @@ export default function Login({ title }) {
             <form className={style.form} action={"/api/auth"} method="POST">
                 <h1 className={style.title}>{title} Login</h1>
                 {/* <p className={style.err_msg} ref={err}></p> */}
-                <input className={style.input} type="text" placeholder="Username" ref={username} required />
-                <input className={style.input} type="password" placeholder="Password" ref={password} required />
+                <input className={style.input} name="username" type="text" placeholder="Username" ref={username} required />
+                <input className={style.input} name="password" type="password" placeholder="Password" ref={password} required />
                 
                 <input className={style.submit} type="submit" value={"Login"} />
             </form>
