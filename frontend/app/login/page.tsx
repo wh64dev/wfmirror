@@ -1,5 +1,6 @@
 import {cookies} from "next/headers";
 import {permanentRedirect, RedirectType} from "next/navigation";
+import style from "./login.module.scss";
 
 async function login(formData: FormData) {
     "use server";
@@ -18,6 +19,7 @@ async function login(formData: FormData) {
 
     if (res.status !== 200) {
         if (res.status === 401) {
+            permanentRedirect("/login/process?success=0", RedirectType.push);
         }
 
         return;
@@ -31,20 +33,19 @@ async function login(formData: FormData) {
         sameSite: "strict"
     });
 
-    permanentRedirect("/", RedirectType.push);
+    permanentRedirect("/login/process?success=1", RedirectType.push);
 }
 
 export default function Login() {
     return (
-        <main>
-            <form method={"POST"} action={login}>
-                <h2>{process.env.FRONT_TITLE}</h2>
-                <div>
-                    <input name={"username"} type={"text"} placeholder={"Username"} required/>
-                    <input name={"password"} type={"password"} placeholder={"Password"} required/>
+        <main className={style.main}>
+            <form className={style.form} method={"POST"} action={login}>
+                <h1 className={style.title}>{process.env.FRONT_TITLE} Login</h1>
 
-                    <button type={"submit"}>Login</button>
-                </div>
+                <input className={style.input} name={"username"} type={"text"} placeholder={"Username"} required/>
+                <input className={style.input} name={"password"} type={"password"} placeholder={"Password"} required/>
+
+                <button className={style.submit} type={"submit"}>Login</button>
             </form>
         </main>
     );
