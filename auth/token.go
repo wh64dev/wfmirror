@@ -28,7 +28,7 @@ func (acc *Account) GenToken() (*string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
-	signed, err := token.SignedString([]byte(cnf.JWT.Secret))
+	signed, err := token.SignedString([]byte(cnf.JWT.PrivKey))
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func Verifier(token string) (*Claims, error) {
 			return nil, errors.New("unexpected signing method")
 		}
 
-		return []byte(cnf.JWT.Secret), nil
+		return []byte(cnf.JWT.PrivKey), nil
 	}
 
 	ref, err := jwt.ParseWithClaims(token, &claims, key)

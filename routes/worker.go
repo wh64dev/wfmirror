@@ -56,21 +56,7 @@ func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "File uploaded successfully: %s", file.Filename)
 }
 
-func (dw *DirWorker) RawFiles(ctx *gin.Context) {
-	path := ctx.Param("filepath")
-	filePath := filepath.Join(uploadBaseDir, filepath.FromSlash(path))
-
-	_, err := os.Stat(filePath)
-	if os.IsNotExist(err) {
-		ctx.String(http.StatusNotFound, "File not found: %s", ctx.Param("filepath"))
-		return
-	}
-
-	_, file := filepath.Split(path)
-	ctx.FileAttachment(filePath, file)
-}
-
-func (dw *DirWorker) ListFiles(ctx *gin.Context) {
+func (dw *DirWorker) List(ctx *gin.Context) {
 	var start = time.Now()
 	var dirname = ctx.Param("dirname")
 	if dirname == "/" || dirname == "/root" {
@@ -78,7 +64,6 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 	}
 
 	baseDir := filepath.Join(uploadBaseDir, dirname)
-	var directory []*FileData
 	file, err := os.Stat(baseDir)
 	if err != nil {
 		ctx.Status(404)
@@ -86,25 +71,39 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 	}
 
 	if !file.IsDir() {
-		ctx.Redirect(301, fmt.Sprintf("/f/%s", dirname))
+		ctx.FileAttachment(baseDir, file.Name())
 		return
 	}
 
-	entries, err := os.ReadDir(baseDir)
+	directory, err := worker(baseDir, dirname)
 	if err != nil {
 		ctx.Status(404)
 		return
 	}
 
+	ctx.JSON(http.StatusOK, gin.H{
+		"dir":          dirname,
+		"data":         directory,
+		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
+	})
+}
+
+func worker(base, dir string) ([]*FileData, error) {
+	entries, err := os.ReadDir(base)
+	if err != nil {
+		return nil, err
+	}
+
 	var files []*FileData
+	var directory []*FileData
 	for _, entry := range entries {
 		format := "01-02-2006 03:04"
 		finfo, _ := entry.Info()
 		ftype := FILE
-		url := fmt.Sprintf("%s%s", dirname, entry.Name())
-		if dirname != "" {
-			if dirname[:len(dirname)-1] != "/" {
-				url = fmt.Sprintf("%s/%s", dirname, entry.Name())
+		url := fmt.Sprintf("%s%s", dir, entry.Name())
+		if dir != "" {
+			if dir[:len(dir)-1] != "/" {
+				url = fmt.Sprintf("%s/%s", dir, entry.Name())
 			}
 		}
 
@@ -132,9 +131,5 @@ func (dw *DirWorker) ListFiles(ctx *gin.Context) {
 	}
 
 	directory = append(directory, files...)
-	ctx.JSON(http.StatusOK, gin.H{
-		"dir":          dirname,
-		"data":         directory,
-		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
-	})
+	return directory, nil
 }

@@ -2,16 +2,12 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
-	"os/signal"
 	"strings"
 	"syscall"
 
-	"github.com/devproje/plog"
 	"github.com/devproje/plog/level"
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
@@ -58,7 +54,24 @@ func init() {
 	}
 }
 
-func task() {
+func main() {
+	cnf := config.Get()
+	app := gin.Default()
+	database.Init()
+	first()
+
+	routes.New(app)
+
+	fmt.Printf("Service bind port at http://localhost:%s\n", cnf.Port)
+	fmt.Println("Mirror is now running. Press CTRL-C to exit.")
+
+	err := app.Run(fmt.Sprintf(":%s", cnf.Port))
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func first() {
 	accounts := auth.QueryAll()
 	if len(accounts) > 0 {
 		return
@@ -100,105 +113,6 @@ func task() {
 	}
 
 	if err = acc.New(); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func main() {
-	cnf := config.Get()
-	app := gin.Default()
-	database.Init()
-	task()
-
-	routes.New(app)
-
-	if single {
-		serve(app, cnf)
-		return
-	}
-
-	go serve(app, cnf) // run backend
-
-	var action = []string{"run", "dev"}
-	if !debug {
-		build(cnf)
-		action = []string{"start"}
-	}
-
-	command := []string{"-C", "./frontend"}
-
-	command = append(command, action...)
-	command = append(command, "--hostname")
-	command = append(command, cnf.Frontend.Host)
-	command = append(command, "--port")
-	command = append(command, cnf.Frontend.Port)
-
-	process := exec.Command("pnpm", command...)
-	if errors.Is(process.Err, exec.ErrDot) {
-		process.Err = nil
-	}
-
-	process.Env = os.Environ()
-	process.Env = append(process.Env, fmt.Sprintf("SERVER_PORT=%s", cnf.Port))
-	process.Env = append(process.Env, fmt.Sprintf("FRONT_TITLE=%s", cnf.Frontend.Title))
-
-	log.SetOutput(os.Stdout)
-	process.Stdout = os.Stdout
-	process.Stderr = os.Stderr
-
-	if err := process.Run(); err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("Frontend is now running. Press CTRL-C to exit.")
-
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
-
-	process.Cancel()
-}
-
-func build(cnf *config.Config) {
-	front := plog.New()
-	front.Level = level.Info
-	if debug {
-		front.Level = level.Trace
-	}
-
-	fmt.Println("create next.js env file")
-	os.Chdir("./frontend")
-	file, err := os.Create(".env")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	_, err = file.Write([]byte(fmt.Sprintf("SERVER_PORT=%s\nFRONT_TITLE=%s\n", cnf.Port, cnf.Frontend.Title)))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("build next.js source...")
-	process := exec.Command("pnpm", "build")
-	if errors.Is(process.Err, exec.ErrDot) {
-		process.Err = nil
-	}
-
-	front.SetOutput(process.Stdout)
-	if err := process.Run(); err != nil {
-		os.Remove(".env")
-		os.Chdir("../")
-		front.Fatalln(err)
-	}
-
-	os.Remove(".env")
-	os.Chdir("../")
-}
-
-func serve(app *gin.Engine, cnf *config.Config) {
-	fmt.Printf("Service bind port at %s\n", cnf.Port)
-	err := app.Run(fmt.Sprintf(":%s", cnf.Port))
-	if err != nil {
 		log.Fatalln(err)
 	}
 }

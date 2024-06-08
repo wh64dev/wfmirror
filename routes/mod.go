@@ -12,12 +12,14 @@ func New(app *gin.Engine) {
 	app.Use(middleware.CORS)
 	app.Use(middleware.CheckPriv)
 
-	app.GET("/f/*filepath", worker.RawFiles)
-	app.GET("/path/*dirname", worker.ListFiles)
-	app.POST("/upload/*dirname", worker.UploadFile)
-
-	auth := app.Group("/auth")
+	api := app.Group("/api")
 	{
-		auth.POST("/login", as.Login)
+		api.GET("/path/*dirname", worker.List)
+		api.POST("/upload/*dirname", worker.UploadFile)
+
+		auth := api.Group("/auth")
+		{
+			auth.POST("/login", as.Login)
+		}
 	}
 }
