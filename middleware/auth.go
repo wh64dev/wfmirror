@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/devproje/plog/log"
@@ -16,6 +17,10 @@ type privdir struct {
 
 func CheckPriv(ctx *gin.Context) {
 	path := ctx.Request.URL.Path
+
+	if !strings.Contains(path, "/login") {
+		ctx.SetCookie("x-current-path", path, 3600, "/", "localhost", false, true)
+	}
 
 	db := database.Open()
 	defer database.Close(db)
@@ -45,7 +50,8 @@ func CheckPriv(ctx *gin.Context) {
 	}
 
 	if strings.Contains(path, data.Path) {
-		token := strings.ReplaceAll(ctx.GetHeader("Authorization"), "Bearer ", "")
+		fmt.Println("auth")
+		token := strings.ReplaceAll(ctx.Request.Header.Get("Authorization"), "Bearer ", "")
 		if token == "" {
 			ctx.JSON(401, gin.H{
 				"ok":     0,
@@ -69,7 +75,7 @@ func CheckPriv(ctx *gin.Context) {
 			return
 		}
 
-		ctx.Next()
-		return
 	}
+
+	ctx.Next()
 }

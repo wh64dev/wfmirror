@@ -38,7 +38,6 @@ func (as *AuthService) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Header("Authorization", *token)
 	ctx.JSON(200, gin.H{
 		"ok":      1,
 		"status":  200,

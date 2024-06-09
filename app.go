@@ -21,12 +21,12 @@ import (
 
 var (
 	debug  bool
-	single bool
+	server bool
 )
 
 func init() {
 	flag.BoolVar(&debug, "D", false, "debug mode")
-	flag.BoolVar(&single, "S", false, "run backend only")
+	flag.BoolVar(&server, "S", false, "run backend only")
 	flag.Parse()
 
 	log.SetLevel(level.Info)
@@ -60,7 +60,7 @@ func main() {
 	database.Init()
 	first()
 
-	routes.New(app)
+	routes.New(app, server)
 
 	fmt.Printf("Service bind port at http://localhost:%s\n", cnf.Port)
 	fmt.Println("Mirror is now running. Press CTRL-C to exit.")
