@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/devproje/plog/log"
@@ -50,31 +49,10 @@ func CheckPriv(ctx *gin.Context) {
 	}
 
 	if strings.Contains(path, data.Path) {
-		fmt.Println("auth")
-		token := strings.ReplaceAll(ctx.Request.Header.Get("Authorization"), "Bearer ", "")
-		if token == "" {
-			ctx.JSON(401, gin.H{
-				"ok":     0,
-				"status": 401,
-				"errno":  "token not found in your browser",
-			})
-
+		if !auth.Validate(ctx) {
 			ctx.Abort()
 			return
 		}
-
-		_, err := auth.Verifier(token)
-		if err != nil {
-			ctx.JSON(401, gin.H{
-				"ok":     0,
-				"status": 401,
-				"errno":  err.Error(),
-			})
-
-			ctx.Abort()
-			return
-		}
-
 	}
 
 	ctx.Next()

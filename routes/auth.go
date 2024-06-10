@@ -7,6 +7,18 @@ import (
 
 type AuthService struct{}
 
+func (as *AuthService) Refresh(ctx *gin.Context) {
+	if !auth.Validate(ctx) {
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"ok":       1,
+		"status":   200,
+		"username": ctx,
+	})
+}
+
 func (as *AuthService) Login(ctx *gin.Context) {
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")

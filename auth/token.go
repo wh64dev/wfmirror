@@ -2,8 +2,10 @@ package auth
 
 import (
 	"errors"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/wh64dev/wfcloud/config"
@@ -36,7 +38,7 @@ func (acc *Account) GenToken() (*string, error) {
 	return &signed, nil
 }
 
-func Verifier(token string) (*Claims, error) {
+func verifier(token string) (*Claims, error) {
 	cnf := config.Get()
 	claims := Claims{}
 	key := func(token *jwt.Token) (interface{}, error) {
@@ -57,4 +59,30 @@ func Verifier(token string) (*Claims, error) {
 	}
 
 	return &claims, nil
+}
+
+func Validate(ctx *gin.Context) bool {
+	token := strings.ReplaceAll(ctx.Request.Header.Get("Authorization"), "Bearer ", "")
+	if token == "" {
+		ctx.JSON(401, gin.H{
+			"ok":     0,
+			"status": 401,
+			"errno":  "token not found in your browser",
+		})
+
+		return false
+	}
+
+	_, err := verifier(token)
+	if err != nil {
+		ctx.JSON(401, gin.H{
+			"ok":     0,
+			"status": 401,
+			"errno":  err.Error(),
+		})
+
+		return false
+	}
+
+	return true
 }
