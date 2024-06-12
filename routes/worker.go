@@ -11,6 +11,7 @@ import (
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/service"
+	"github.com/wh64dev/wfcloud/service/auth"
 	"github.com/wh64dev/wfcloud/util"
 )
 
@@ -33,8 +34,21 @@ type FileData struct {
 	Modified string `json:"modified"`
 }
 
-// TODO: CREATE AUTH START
+func checkAuth(ctx *gin.Context) bool {
+	_, validation := auth.Validate(ctx, false)
+	return validation
+}
+
 func (dw *DirWorker) UploadFile(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	dirname := ctx.Param("dirname")
 	if dirname == "/" || dirname == "/root" {
 		dirname = ""
@@ -68,6 +82,15 @@ func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 }
 
 func (dw *DirWorker) AddSecret(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	dirname := ctx.Param("dirname")
 	if dirname == "/" || dirname == "/root" {
 		dirname = ""
@@ -88,6 +111,15 @@ func (dw *DirWorker) AddSecret(ctx *gin.Context) {
 }
 
 func (dw *DirWorker) DropSecret(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	id := ctx.Param("id")
 	priv := new(service.PrivDir)
 
@@ -111,6 +143,15 @@ func (dw *DirWorker) DropSecret(ctx *gin.Context) {
 }
 
 func (dw *DirWorker) QuerySecret(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	priv := new(service.PrivDir)
 
 	dirs, err := priv.GetAll()
@@ -127,8 +168,6 @@ func (dw *DirWorker) QuerySecret(ctx *gin.Context) {
 		"dirs": dirs,
 	})
 }
-
-// AUTH END
 
 func (dw *DirWorker) List(ctx *gin.Context) {
 	var start = time.Now()

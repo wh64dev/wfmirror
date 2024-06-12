@@ -3,10 +3,9 @@ package middleware
 import (
 	"strings"
 
-	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
-	"github.com/wh64dev/wfcloud/auth"
 	"github.com/wh64dev/wfcloud/service"
+	"github.com/wh64dev/wfcloud/service/auth"
 )
 
 func CheckPriv(ctx *gin.Context) {
@@ -19,14 +18,17 @@ func CheckPriv(ctx *gin.Context) {
 			return
 		}
 
-		ctx.String(500, "Database Error")
-		log.Errorln(err)
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err,
+		})
 		ctx.Abort()
 		return
 	}
 
 	if strings.Contains(path, target.Path) {
-		if !auth.Validate(ctx) {
+		_, validation := auth.Validate(ctx, true)
+		if !validation {
 			ctx.Abort()
 			return
 		}

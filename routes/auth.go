@@ -2,20 +2,21 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/wh64dev/wfcloud/auth"
+	"github.com/wh64dev/wfcloud/service/auth"
 )
 
 type AuthService struct{}
 
-func (as *AuthService) Refresh(ctx *gin.Context) {
-	if !auth.Validate(ctx) {
+func (as *AuthService) Info(ctx *gin.Context) {
+	claims, validation := auth.Validate(ctx, true)
+	if !validation {
 		return
 	}
 
 	ctx.JSON(200, gin.H{
 		"ok":       1,
-		"status":   200,
-		"username": ctx,
+		"id":       claims.UserID,
+		"username": claims.Username,
 	})
 }
 

@@ -61,28 +61,32 @@ func verifier(token string) (*Claims, error) {
 	return &claims, nil
 }
 
-func Validate(ctx *gin.Context) bool {
+func Validate(ctx *gin.Context, print bool) (*Claims, bool) {
 	token := strings.ReplaceAll(ctx.Request.Header.Get("Authorization"), "Bearer ", "")
 	if token == "" {
-		ctx.JSON(401, gin.H{
-			"ok":     0,
-			"status": 401,
-			"errno":  "token not found in your browser",
-		})
+		if print {
+			ctx.JSON(401, gin.H{
+				"ok":     0,
+				"status": 401,
+				"errno":  "token not found in your browser",
+			})
+		}
 
-		return false
+		return nil, false
 	}
 
-	_, err := verifier(token)
+	claims, err := verifier(token)
 	if err != nil {
-		ctx.JSON(401, gin.H{
-			"ok":     0,
-			"status": 401,
-			"errno":  err.Error(),
-		})
+		if print {
+			ctx.JSON(401, gin.H{
+				"ok":     0,
+				"status": 401,
+				"errno":  err.Error(),
+			})
+		}
 
-		return false
+		return nil, false
 	}
 
-	return true
+	return claims, true
 }

@@ -59,7 +59,7 @@ func New(app *gin.Engine, server bool) {
 
 		auth := api.Group("/auth")
 		{
-			auth.GET("/", as.Refresh)
+			auth.GET("/", as.Info)
 			auth.POST("/login", as.Login)
 		}
 	}

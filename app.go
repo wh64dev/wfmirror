@@ -12,9 +12,9 @@ import (
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/wh64dev/wfcloud/auth"
 	"github.com/wh64dev/wfcloud/config"
 	"github.com/wh64dev/wfcloud/routes"
+	"github.com/wh64dev/wfcloud/service/auth"
 	"github.com/wh64dev/wfcloud/util/database"
 	"golang.org/x/term"
 )
@@ -86,7 +86,7 @@ func first() {
 		log.Fatalln(err)
 	}
 
-	// Read password
+	// Read Password
 	fmt.Print("Enter Password: ")
 	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
