@@ -49,8 +49,13 @@ func New(app *gin.Engine, server bool) {
 
 	api := app.Group("/api")
 	{
-		api.GET("/path/*dirname", dirWorker.List)
-		api.POST("/upload/*dirname", dirWorker.UploadFile)
+		path := api.Group("/path")
+		{
+			path.GET("/*dirname", dirWorker.List)
+			path.PUT("/upload/*dirname", dirWorker.UploadFile)
+			path.POST("/secret/*dirname", dirWorker.AddSecret)
+			path.DELETE("/secret/:id", dirWorker.DropSecret)
+		}
 
 		auth := api.Group("/auth")
 		{

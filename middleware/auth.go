@@ -6,37 +6,14 @@ import (
 	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/auth"
-	"github.com/wh64dev/wfcloud/util/database"
+	"github.com/wh64dev/wfcloud/service"
 )
 
-type privdir struct {
-	Id   int
-	Path string
-}
-
 func CheckPriv(ctx *gin.Context) {
-	path := ctx.Request.URL.Path
+	path, _ := ctx.Params.Get("dirname")
 
-	if !strings.Contains(path, "/login") {
-		ctx.SetCookie("x-current-path", path, 3600, "/", "localhost", false, true)
-	}
-
-	db := database.Open()
-	defer database.Close(db)
-
-	stmt := `select * from privdir;`
-
-	prep, err := db.Prepare(stmt)
-	if err != nil {
-		ctx.String(500, "Internal Server Error")
-		log.Errorln(err)
-		ctx.Abort()
-		return
-	}
-
-	var data privdir
-	row := prep.QueryRow()
-	err = row.Scan(&data.Id, &data.Path)
+	priv := new(service.PrivDir)
+	target, err := priv.Get(path)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			return
@@ -48,7 +25,7 @@ func CheckPriv(ctx *gin.Context) {
 		return
 	}
 
-	if strings.Contains(path, data.Path) {
+	if strings.Contains(path, target.Path) {
 		if !auth.Validate(ctx) {
 			ctx.Abort()
 			return

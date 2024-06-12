@@ -5,9 +5,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
+	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
+	"github.com/wh64dev/wfcloud/service"
 	"github.com/wh64dev/wfcloud/util"
 )
 
@@ -30,6 +33,7 @@ type FileData struct {
 	Modified string `json:"modified"`
 }
 
+// TODO: CREATE AUTH START
 func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 	dirname := ctx.Param("dirname")
 	if dirname == "/" || dirname == "/root" {
@@ -37,13 +41,19 @@ func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 	}
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "Bad request: %v", err)
+		ctx.JSON(400, gin.H{
+			"ok":    0,
+			"errno": fmt.Sprintf("Bad request: %v", err),
+		})
 		return
 	}
 
 	uploadDir := filepath.Join(uploadBaseDir, filepath.FromSlash(dirname))
 	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-		ctx.String(http.StatusInternalServerError, "Could not create upload directory: %v", err)
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": fmt.Sprintf("Could not create upload directory: %v", err),
+		})
 		return
 	}
 
@@ -53,8 +63,72 @@ func (dw *DirWorker) UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.String(http.StatusOK, "File uploaded successfully: %s", file.Filename)
+	log.Infof("File uploaded successfully: %s\n", file.Filename)
+	ctx.Status(200)
 }
+
+func (dw *DirWorker) AddSecret(ctx *gin.Context) {
+	dirname := ctx.Param("dirname")
+	if dirname == "/" || dirname == "/root" {
+		dirname = ""
+	}
+
+	priv := new(service.PrivDir)
+
+	err := priv.Add(dirname)
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"status": 500,
+			"errno":  fmt.Sprintf("Cannot add private directory: %v", err),
+		})
+		return
+	}
+
+	ctx.Status(200)
+}
+
+func (dw *DirWorker) DropSecret(ctx *gin.Context) {
+	id := ctx.Param("id")
+	priv := new(service.PrivDir)
+
+	numberId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		ctx.JSON(400, gin.H{
+			"ok":    0,
+			"errno": "id must be number",
+		})
+		return
+	}
+
+	err = priv.Drop(int(numberId))
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err,
+		})
+		return
+	}
+}
+
+func (dw *DirWorker) QuerySecret(ctx *gin.Context) {
+	priv := new(service.PrivDir)
+
+	dirs, err := priv.GetAll()
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err,
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"ok":   1,
+		"dirs": dirs,
+	})
+}
+
+// AUTH END
 
 func (dw *DirWorker) List(ctx *gin.Context) {
 	var start = time.Now()
