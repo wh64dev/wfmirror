@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -22,11 +23,13 @@ import (
 var (
 	debug  bool
 	server bool
+	docker bool
 )
 
 func init() {
 	flag.BoolVar(&debug, "D", false, "debug mode")
 	flag.BoolVar(&server, "S", false, "run backend only")
+	flag.BoolVar(&docker, "C", false, "docker environment")
 	flag.Parse()
 
 	log.SetLevel(level.Info)
@@ -41,12 +44,12 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	if _, err = os.ReadDir("./data"); err != nil {
-		_ = os.Mkdir("data", 0775)
-	}
-
 	if _, err = os.ReadDir("./temp"); err != nil {
 		_ = os.Mkdir("temp", 0775)
+	}
+
+	if _, err = os.ReadFile("./temp/service.db"); err != nil {
+		_, _ = os.Create("temp/service.db")
 	}
 
 	if _, err = os.ReadFile("./temp/config.json"); err != nil {
@@ -55,8 +58,9 @@ func init() {
 		_ = os.WriteFile("./temp/config.json", cnf, 0755)
 	}
 
-	if _, err = os.ReadFile("./temp/service.db"); err != nil {
-		_, _ = os.Create("temp/service.db")
+	cnf := config.Get()
+	if _, err = os.ReadDir(fmt.Sprintf("./%s", cnf.Global.DataDir)); err != nil {
+		_ = os.Mkdir(fmt.Sprint(cnf.Global.DataDir), 0775)
 	}
 }
 
@@ -68,18 +72,48 @@ func main() {
 
 	routes.New(app, server)
 
-	fmt.Printf("Service bind port at http://localhost:%s\n", cnf.Port)
-	fmt.Println("Mirror is now running. Press CTRL-C to exit.")
-
-	err := app.Run(fmt.Sprintf(":%s", cnf.Port))
+	port, err := strconv.ParseInt(cnf.Port, 10, 32)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	if !debug {
+		fmt.Printf("Service bind port at http://localhost:%s\n", cnf.Port)
+		fmt.Println("Mirror is now running. Press CTRL-C to exit.")
+	}
+
+	err = Run(app, fmt.Sprintf(":%d", port))
+	if err != nil {
+		if !debug {
+			log.Fatalln(err)
+		}
+
+		for err != nil {
+			port += 1
+			err = Run(app, fmt.Sprintf(":%d", port))
+		}
+	}
+}
+
+func Run(app *gin.Engine, port string) error {
+	return app.Run(port)
 }
 
 func first() {
 	accounts := auth.QueryAll()
 	if len(accounts) > 0 {
+		return
+	}
+
+	if docker {
+		cnf := config.Get()
+		username := cnf.Docker.PreUsername
+		password := cnf.Docker.PrePassword
+		if username == "" || password == "" {
+			log.Fatalln("PRE_USERNAME or PRE_PASSWORD must be not empty. please check your .env file.")
+		}
+
+		create(username, password)
 		return
 	}
 
@@ -113,12 +147,16 @@ func first() {
 		log.Fatalln("typed password not compared")
 	}
 
+	create(strings.TrimSpace(username), string(bytePassword))
+}
+
+func create(username string, password string) {
 	acc := &auth.Account{
-		Username: strings.TrimSpace(username),
-		Password: string(bytePassword),
+		Username: username,
+		Password: password,
 	}
 
-	if _, err = acc.New(); err != nil {
+	if _, err := acc.New(); err != nil {
 		log.Fatalln(err)
 	}
 }

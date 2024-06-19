@@ -49,8 +49,9 @@ func (as *AuthService) Register(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, gin.H{
-		"ok": 1,
-		"id": id,
+		"ok":     1,
+		"action": "create",
+		"id":     id,
 	})
 }
 
@@ -132,6 +133,35 @@ func (as *AuthService) ChangePassword(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, gin.H{
-		"ok": 1,
+		"ok":     1,
+		"action": "update",
+		"id":     id,
+	})
+}
+
+func (as *AuthService) DeleteAccount(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
+	id := ctx.PostForm("id")
+	err := auth.DeleteAccount(id)
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"ok":     1,
+		"action": "delete",
+		"id":     id,
 	})
 }

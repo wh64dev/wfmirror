@@ -133,3 +133,27 @@ func ChangePassword(id, password string) error {
 	log.Infof("row inserted id: %d\n", resId)
 	return nil
 }
+
+func DeleteAccount(id string) error {
+	db := database.Open()
+	defer database.Close(db)
+
+	stmt := "delete from account where id = ?;"
+	prep, err := db.Prepare(stmt)
+	if err != nil {
+		return err
+	}
+
+	res, err := prep.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	resId, err := res.LastInsertId()
+	if err != nil {
+		return nil
+	}
+
+	log.Infof("row inserted id: %d\n", resId)
+	return nil
+}

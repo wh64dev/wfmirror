@@ -24,7 +24,7 @@ func New(app *gin.Engine, server bool) {
 		app.LoadHTMLGlob("./pages/*.html")
 
 		app.GET("/", func(ctx *gin.Context) {
-			base := filepath.Join(uploadBaseDir, "")
+			base := filepath.Join(cnf.Global.DataDir, "")
 			entries, err := worker(base, "")
 			if err != nil {
 				return
@@ -53,9 +53,12 @@ func New(app *gin.Engine, server bool) {
 		path := api.Group("/path")
 		{
 			path.GET("/*dirname", dirWorker.List)
+			path.PUT("/mkdir/*dirname", dirWorker.CreateDir)
 			path.PUT("/upload/*dirname", dirWorker.UploadFile)
+			path.DELETE("/delete/*dirname", dirWorker.DeleteFile)
 			path.POST("/secret/*dirname", dirWorker.AddSecret)
 			path.DELETE("/secret/:id", dirWorker.DropSecret)
+			path.OPTIONS("/qs", dirWorker.QuerySecret)
 		}
 
 		auth := api.Group("/auth")
@@ -64,6 +67,7 @@ func New(app *gin.Engine, server bool) {
 			auth.POST("/login", as.Login)
 			auth.GET("/query", as.Accounts)
 			auth.PUT("/password", as.ChangePassword)
+			auth.DELETE("/delete", as.DeleteAccount)
 		}
 
 		configuration := api.Group("/configuration")
@@ -71,7 +75,6 @@ func New(app *gin.Engine, server bool) {
 			configuration.GET("/")
 			configuration.GET("/dir", configure.LoadConfig)
 			configuration.POST("/dir", configure.SetConfig)
-			configuration.GET("/secret", dirWorker.QuerySecret)
 		}
 	}
 }

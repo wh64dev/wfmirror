@@ -17,12 +17,18 @@ type GlobalConf struct {
 	DataDir string `json:"data_dir"`
 }
 
+type DockerConf struct {
+	PreUsername string
+	PrePassword string
+}
+
 type Config struct {
 	Port        string
 	AllowOrigin string
 	Service     service
 	JWT         jwtOption
 	Global      GlobalConf
+	Docker      DockerConf
 }
 
 func Get() *Config {
@@ -47,6 +53,10 @@ func Get() *Config {
 			PrivKey: os.Getenv("JWT_SECRET"),
 		},
 		Global: data,
+		Docker: DockerConf{
+			PreUsername: os.Getenv("PRE_USERNAME"),
+			PrePassword: os.Getenv("PRE_PASSWORD"),
+		},
 	}
 }
 
