@@ -12,8 +12,9 @@ import (
 
 func New(app *gin.Engine, server bool) {
 	cnf := config.Get()
-	dirWorker := new(DirWorker)
 	as := new(AuthService)
+	dirWorker := new(DirWorker)
+	configure := new(ConfigService)
 
 	app.Use(middleware.CORS)
 	app.Use(middleware.CheckPriv)
@@ -63,13 +64,13 @@ func New(app *gin.Engine, server bool) {
 			auth.POST("/login", as.Login)
 			auth.GET("/query", as.Accounts)
 			auth.PUT("/password", as.ChangePassword)
-
 		}
 
 		configuration := api.Group("configuration")
 		{
 			configuration.GET("/")
-			configuration.POST("/dir")
+			configuration.GET("/dir", configure.LoadConfig)
+			configuration.POST("/dir", configure.SetConfig)
 			configuration.GET("/secret", dirWorker.QuerySecret)
 		}
 	}
