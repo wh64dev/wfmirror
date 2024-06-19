@@ -14,7 +14,7 @@ func (cs *ConfigService) LoadConfig(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
 		"ok":     1,
 		"status": 200,
-		"data":   cnf,
+		"data":   cnf.Global,
 	})
 }
 

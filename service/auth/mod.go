@@ -30,7 +30,7 @@ func CheckHash(pwd, hash string) bool {
 	return err == nil
 }
 
-func (acc *Account) New() error {
+func (acc *Account) New() (string, error) {
 	newID := uuid.New()
 	hashedPw := Hash(acc.Password)
 
@@ -40,18 +40,18 @@ func (acc *Account) New() error {
 	stmt := "insert into account values (?, ?, ?);"
 	prep, err := db.Prepare(stmt)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	res, err := prep.Exec(newID.String(), acc.Username, hashedPw)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	id, _ := res.LastInsertId()
 	log.Infof("row inserted id: %d\n", id)
 
-	return nil
+	return newID.String(), nil
 }
 
 func (af *AuthForm) Login() (*Account, error) {
@@ -106,4 +106,30 @@ func QueryAll() []*Account {
 	}
 
 	return accounts
+}
+
+func ChangePassword(id, password string) error {
+	db := database.Open()
+	defer database.Close(db)
+
+	hashedPw := Hash(password)
+
+	stmt := "update from account set password = ? where id = ?;"
+	prep, err := db.Prepare(stmt)
+	if err != nil {
+		return err
+	}
+
+	res, err := prep.Exec(hashedPw, id)
+	if err != nil {
+		return err
+	}
+
+	resId, err := res.LastInsertId()
+	if err != nil {
+		return nil
+	}
+
+	log.Infof("row inserted id: %d\n", resId)
+	return nil
 }

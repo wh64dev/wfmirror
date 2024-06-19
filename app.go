@@ -118,7 +118,7 @@ func first() {
 		Password: string(bytePassword),
 	}
 
-	if err = acc.New(); err != nil {
+	if _, err = acc.New(); err != nil {
 		log.Fatalln(err)
 	}
 }

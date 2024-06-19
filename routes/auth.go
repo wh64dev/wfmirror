@@ -20,6 +20,40 @@ func (as *AuthService) Info(ctx *gin.Context) {
 	})
 }
 
+func (as *AuthService) Register(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+
+	acc := &auth.Account{
+		Username: username,
+		Password: password,
+	}
+
+	id, err := acc.New()
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err.Error(),
+		})
+
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"ok": 1,
+		"id": id,
+	})
+}
+
 func (as *AuthService) Login(ctx *gin.Context) {
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
@@ -56,5 +90,48 @@ func (as *AuthService) Login(ctx *gin.Context) {
 		"status":  200,
 		"user_id": acc.Id,
 		"token":   *token,
+	})
+}
+
+func (as *AuthService) Accounts(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
+	data := auth.QueryAll()
+	ctx.JSON(200, gin.H{
+		"ok":     1,
+		"status": 200,
+		"data":   data,
+	})
+}
+
+func (as *AuthService) ChangePassword(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
+	id := ctx.PostForm("id")
+	password := ctx.PostForm("password")
+	err := auth.ChangePassword(id, password)
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"ok":    0,
+			"errno": err.Error(),
+		})
+	}
+
+	ctx.JSON(200, gin.H{
+		"ok": 1,
 	})
 }
