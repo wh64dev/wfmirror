@@ -66,7 +66,7 @@ func New(app *gin.Engine, server bool) {
 			auth.PUT("/password", as.ChangePassword)
 		}
 
-		configuration := api.Group("configuration")
+		configuration := api.Group("/configuration")
 		{
 			configuration.GET("/")
 			configuration.GET("/dir", configure.LoadConfig)
