@@ -11,6 +11,17 @@ import (
 func CheckPriv(ctx *gin.Context) {
 	path, _ := ctx.Params.Get("dirname")
 
+	if strings.Contains(path, "/path/api/configuration") {
+		_, validation := auth.Validate(ctx, true)
+		if !validation {
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+		return
+	}
+
 	priv := new(service.PrivDir)
 	target, err := priv.Get(path)
 	if err != nil {

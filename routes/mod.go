@@ -62,5 +62,11 @@ func New(app *gin.Engine, server bool) {
 			auth.GET("/", as.Info)
 			auth.POST("/login", as.Login)
 		}
+
+		configuration := api.Group("configuration")
+		{
+			configuration.GET("/")
+			configuration.POST("/dir")
+		}
 	}
 }

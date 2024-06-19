@@ -49,6 +49,12 @@ func init() {
 		_ = os.Mkdir("temp", 0775)
 	}
 
+	if _, err = os.ReadFile("./temp/config.json"); err != nil {
+		cnf, _ := config.LoadDefault()
+		_, _ = os.Create("temp/config.json")
+		_ = os.WriteFile("./temp/config.json", cnf, 0755)
+	}
+
 	if _, err = os.ReadFile("./temp/service.db"); err != nil {
 		_, _ = os.Create("temp/service.db")
 	}
