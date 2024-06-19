@@ -10,6 +10,15 @@ import (
 type ConfigService struct{}
 
 func (cs *ConfigService) LoadConfig(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	cnf := config.Get()
 	ctx.JSON(200, gin.H{
 		"ok":     1,
@@ -19,6 +28,15 @@ func (cs *ConfigService) LoadConfig(ctx *gin.Context) {
 }
 
 func (cs *ConfigService) SetConfig(ctx *gin.Context) {
+	if !checkAuth(ctx) {
+		ctx.JSON(401, gin.H{
+			"ok":    0,
+			"errno": "unauthorized access",
+		})
+
+		return
+	}
+
 	t := ctx.PostForm("type")
 	value := ctx.PostForm("value")
 
