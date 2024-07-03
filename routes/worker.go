@@ -5,15 +5,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/devproje/plog/log"
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/config"
-	"github.com/wh64dev/wfcloud/service"
-	"github.com/wh64dev/wfcloud/service/auth"
 	"github.com/wh64dev/wfcloud/util"
 )
 
@@ -32,11 +27,6 @@ type FileData struct {
 	Size     string `json:"size"`
 	Type     string `json:"type"`
 	Modified string `json:"modified"`
-}
-
-func checkAuth(ctx *gin.Context) bool {
-	_, validation := auth.Validate(ctx, false)
-	return validation
 }
 
 func worker(base, dir string) ([]*FileData, error) {
@@ -112,224 +102,9 @@ func (dw *DirWorker) List(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
+		"ok":           1,
 		"dir":          dirname,
 		"data":         directory,
 		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
-	})
-}
-
-func (dw *DirWorker) CreateDir(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	var dirname = ctx.Param("dirname")
-	if dirname == "/" || dirname == "/root" {
-		dirname = ""
-	}
-
-	cnf := config.Get()
-	baseDir := filepath.Join(cnf.Global.DataDir, dirname)
-	split := strings.Split("/", baseDir)
-	newPath := baseDir
-
-	baseDir = ""
-	for i := range len(split) - 1 {
-		baseDir += split[i] + "/"
-	}
-
-	_, err := os.Stat(baseDir)
-	if err != nil {
-		ctx.Status(404)
-		return
-	}
-
-	err = os.Mkdir(newPath, 0755)
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"ok":    0,
-			"errno": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(200, gin.H{
-		"ok":   1,
-		"path": newPath,
-	})
-}
-
-func (dw *DirWorker) UploadFile(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	dirname := ctx.Param("dirname")
-	if dirname == "/" || dirname == "/root" {
-		dirname = ""
-	}
-	file, err := ctx.FormFile("file")
-	if err != nil {
-		ctx.JSON(400, gin.H{
-			"ok":    0,
-			"errno": fmt.Sprintf("Bad request: %v", err),
-		})
-		return
-	}
-
-	cnf := config.Get()
-	uploadDir := filepath.Join(cnf.Global.DataDir, filepath.FromSlash(dirname))
-	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-		ctx.JSON(500, gin.H{
-			"ok":    0,
-			"errno": fmt.Sprintf("Could not create upload directory: %v", err),
-		})
-		return
-	}
-
-	filePath := filepath.Join(uploadDir, filepath.Base(file.Filename))
-	if err := ctx.SaveUploadedFile(file, filePath); err != nil {
-		ctx.String(http.StatusInternalServerError, "Could not save file: %v", err)
-		return
-	}
-
-	log.Infof("File uploaded successfully: %s\n", file.Filename)
-	ctx.Status(200)
-}
-
-func (dw *DirWorker) DeleteFile(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	var start = time.Now()
-	var dirname = ctx.Param("dirname")
-	if dirname == "/" || dirname == "/root" {
-		dirname = ""
-	}
-
-	cnf := config.Get()
-	baseDir := filepath.Join(cnf.Global.DataDir, dirname)
-	_, err := os.Stat(baseDir)
-	if err != nil {
-		ctx.Status(404)
-		return
-	}
-
-	err = os.RemoveAll(baseDir)
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"ok":    0,
-			"errno": err.Error(),
-		})
-
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"path":         dirname,
-		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
-	})
-}
-
-func (dw *DirWorker) AddSecret(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	dirname := ctx.Param("dirname")
-	if dirname == "/" || dirname == "/root" {
-		dirname = ""
-	}
-
-	priv := new(service.PrivDir)
-	err := priv.Add(dirname)
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"status": 500,
-			"errno":  fmt.Sprintf("Cannot add private directory: %v", err),
-		})
-		return
-	}
-
-	ctx.Status(200)
-}
-
-func (dw *DirWorker) DropSecret(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	id := ctx.Param("id")
-	priv := new(service.PrivDir)
-
-	numberId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		ctx.JSON(400, gin.H{
-			"ok":    0,
-			"errno": "id must be number",
-		})
-		return
-	}
-
-	err = priv.Drop(int(numberId))
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"ok":    0,
-			"errno": err,
-		})
-		return
-	}
-}
-
-func (dw *DirWorker) QuerySecret(ctx *gin.Context) {
-	if !checkAuth(ctx) {
-		ctx.JSON(401, gin.H{
-			"ok":    0,
-			"errno": "unauthorized access",
-		})
-
-		return
-	}
-
-	priv := new(service.PrivDir)
-
-	dirs, err := priv.GetAll()
-	if err != nil {
-		ctx.JSON(500, gin.H{
-			"ok":    0,
-			"errno": err,
-		})
-		return
-	}
-
-	ctx.JSON(200, gin.H{
-		"ok":   1,
-		"dirs": dirs,
 	})
 }

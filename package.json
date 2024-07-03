@@ -1,0 +1,23 @@
+{
+	"name": "my-app",
+	"version": "2.0.0",
+	"license": "MIT",
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"app-dev": "go run app.go",
+		"app-build": "go build -o wfmirror app.go"
+	},
+	"dependencies": {
+		"next": "14.2.4",
+		"react": "^18",
+		"react-dom": "^18"
+	},
+	"devDependencies": {
+		"eslint": "^8",
+		"eslint-config-next": "14.2.4",
+		"sass": "^1.77.6"
+	}
+}

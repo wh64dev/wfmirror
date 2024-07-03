@@ -2,79 +2,27 @@ package routes
 
 import (
 	"fmt"
-	"html/template"
-	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wh64dev/wfcloud/config"
 	"github.com/wh64dev/wfcloud/middleware"
 )
 
-func New(app *gin.Engine, server bool) {
-	cnf := config.Get()
-	as := new(AuthService)
+func New(app *gin.Engine) {
 	dirWorker := new(DirWorker)
-	configure := new(ConfigService)
-
 	app.Use(middleware.CORS)
-	app.Use(middleware.CheckPriv)
 
-	if !server {
-		app.Static("/static", "./static")
-		app.LoadHTMLGlob("./pages/*.html")
-
-		app.GET("/", func(ctx *gin.Context) {
-			base := filepath.Join(cnf.Global.DataDir, "")
-			entries, err := worker(base, "")
-			if err != nil {
-				return
-			}
-
-			var temp = ""
-			for _, entry := range entries {
-				temp += fmt.Sprintf("<a href=\"%s\">%s</a><br/>", entry.URL, entry.Name)
-			}
-
-			ctx.HTML(200, "page.html", gin.H{
-				"name": cnf.Service.Name,
-				"dir":  template.HTML(temp),
-			})
+	app.GET("/", func(ctx *gin.Context) {
+		start := time.Now()
+		cnf := config.Get()
+		ctx.JSON(200, gin.H{
+			"ok":           1,
+			"version":      cnf.Dist.Version,
+			"directory":    cnf.Global.DataDir,
+			"service_name": cnf.Service.Name,
+			"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
 		})
-
-		app.GET("/login", func(ctx *gin.Context) {
-			ctx.HTML(200, "login.html", gin.H{
-				"name": cnf.Service.Name,
-			})
-		})
-	}
-
-	api := app.Group("/api")
-	{
-		path := api.Group("/path")
-		{
-			path.GET("/*dirname", dirWorker.List)
-			path.PUT("/mkdir/*dirname", dirWorker.CreateDir)
-			path.PUT("/upload/*dirname", dirWorker.UploadFile)
-			path.DELETE("/delete/*dirname", dirWorker.DeleteFile)
-			path.POST("/secret/*dirname", dirWorker.AddSecret)
-			path.DELETE("/secret/:id", dirWorker.DropSecret)
-			path.OPTIONS("/qs", dirWorker.QuerySecret)
-		}
-
-		auth := api.Group("/auth")
-		{
-			auth.GET("/", as.Info)
-			auth.POST("/login", as.Login)
-			auth.GET("/query", as.Accounts)
-			auth.PUT("/password", as.ChangePassword)
-			auth.DELETE("/delete", as.DeleteAccount)
-		}
-
-		configuration := api.Group("/configuration")
-		{
-			configuration.GET("/")
-			configuration.GET("/dir", configure.LoadConfig)
-			configuration.POST("/dir", configure.SetConfig)
-		}
-	}
+	})
+	app.GET("/path/*dirname", dirWorker.List)
 }
