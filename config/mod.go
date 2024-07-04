@@ -38,7 +38,7 @@ func Get() *Config {
 	}
 
 	return &Config{
-		Port: os.Getenv("PORT"),
+		Port: os.Getenv("SERVICE_PORT"),
 		Dist: data,
 		Service: service{
 			Name: os.Getenv("SERVICE_NAME"),

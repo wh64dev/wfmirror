@@ -1,0 +1,18 @@
+.header {
+	top: 0;
+	width: 100%;
+	display: flex;
+	position: sticky;
+	height: var(--nav);
+	align-items: center;
+	background: var(--background);
+	justify-content: space-between;
+}
+
+.footer {
+	width: 100%;
+	display: flex;
+	padding: 10px;
+	align-items: center;
+	justify-content: center;
+}

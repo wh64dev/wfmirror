@@ -1,16 +1,25 @@
 import { Render } from "@/components/Render";
-import styles from "@/app/page.module.scss";
 
-export default async function Page({ params }) {
+export default async function Path({ params }) {
 	async function read() {
 		"use server";
-		const res = await fetch(`${process.env.SERVER_URL}/path/${params.slug}`, {
-			mode: "cors"
+
+		let path = "";
+		for (const p of params.slug) {
+			path += `/${p}`
+		}
+
+		console.log(path);
+
+		const res = await fetch(`http://localhost:${process.env.SERVICE_PORT}/path${path}`, {
+			mode: "cors",
+			method: "GET"
 		});
 
 		return res.json();
 	}
 
 	const data = await read();
-	return <Render url={process.env.SERVER_URL} data={data} />
+
+	return <Render url={`http://localhost:${process.env.SERVICE_PORT}`} data={data} back={true} />
 }
