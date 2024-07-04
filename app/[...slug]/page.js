@@ -11,7 +11,7 @@ export default async function Path({ params }) {
 
 		console.log(path);
 
-		const res = await fetch(`http://localhost:${process.env.SERVICE_PORT}/path${path}`, {
+		const res = await fetch(`${process.env.SERVER_URL}/path${path}`, {
 			mode: "cors",
 			method: "GET"
 		});
@@ -21,5 +21,5 @@ export default async function Path({ params }) {
 
 	const data = await read();
 
-	return <Render url={`http://localhost:${process.env.SERVICE_PORT}`} data={data} back={true} />
+	return <Render url={process.env.SERVER_URL} data={data} back={true} />
 }
