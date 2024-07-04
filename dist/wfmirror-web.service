@@ -1,1 +1,19 @@
+[Unit]
+Description=WFMirror Frontend Application
+After=syslog.target network.target
 
+[Service]
+Type=simple
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10s
+
+User=wfmirror
+Group=wfmirror
+
+WorkingDirectory=/opt/wfmirror
+ExecStart=pnpm -C /opt/wfmirror start
+ExecStop=/bin/kill -9 $MAINPID
+
+[Install]
+WantedBy=multi-user.target

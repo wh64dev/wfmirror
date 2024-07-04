@@ -50,11 +50,11 @@ body {
 	background-color: var(--background);
 	font-family: var(--font-default), serif;
 
-	@media (max-width: 1500px) and (min-width: 1000px) {
+	@media (max-width: 1500px) and (min-width: 1200px) {
 		padding: 0 var(--gap-1);
 	}
 
-	@media (max-width: 999px) and (min-width: 701px) {
+	@media (max-width: 1200px) and (min-width: 701px) {
 		padding: 0 var(--gap-2);
 	}
 

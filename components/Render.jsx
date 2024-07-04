@@ -56,7 +56,7 @@ function RenderEntry({ url, data, back }) {
 export function Render({ url, data, back = false }) {
 	return (
 		<div className={styles.container}>
-			<h2>{data.dir !== "" ? data.dir : "/"}</h2>
+			<b className={styles.dir}>Path: {data.dir !== "" ? data.dir : "/"}</b>
 			<table className={styles.entries}>
 				<tbody>
 				<tr className={styles.entry}>
