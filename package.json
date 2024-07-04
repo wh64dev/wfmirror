@@ -7,7 +7,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"app-dev": "go run app.go",
+		"app-dev": "go run app.go -D",
 		"app-build": "go build -o wfmirror app.go"
 	},
 	"dependencies": {
