@@ -1,0 +1,34 @@
+.indicator {
+	@media (max-width: 700px) {
+		display: none;
+	}
+}
+
+.info {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	justify-content: space-between;
+
+	i {
+		font-size: 24pt;
+	}
+}
+
+.stats {
+	display: table;
+}
+
+.stats_row {
+	display: table-row;
+}
+
+.stats_name {
+	display: table-cell;
+}
+
+.stats_value {
+	width: 77px;
+	text-align: right;
+	display: table-cell;
+}
