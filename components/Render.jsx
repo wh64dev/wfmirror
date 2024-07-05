@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import styles from "./render.module.scss";
 import React from "react";
 
@@ -15,6 +16,10 @@ function RenderEntry({ url, data, back }) {
 			<td className={styles.entry_item}>X</td>
 			<td className={styles.entry_item}>X</td>
 		</tr>;
+	}
+
+	if (typeof location === "undefined") {
+		return;
 	}
 
 	return (
@@ -58,21 +63,20 @@ function RenderEntry({ url, data, back }) {
 	);
 }
 
-function click(ev, url) {
-	ev.preventDefault();
-	location.href = url;
-}
-
 /**
  * @author WH64
  * @returns { JSX.Element }
  */
 export function Render({ url, data, back = false }) {
+	const router = useRouter();
 	return (
 		<div className={styles.container}>
 			<div className={styles.explorer}>
 				<b>Path: {data.dir !== "" ? data.dir : "/"}</b>
-				<button onClick={ev => click(ev, `${url}/path${data.dir}`)}>Raw</button>
+				<button onClick={ev => {
+					ev.preventDefault();
+					router.push(`${url}/path${data.dir}`);
+				}}>Raw</button>
 			</div>
 			<table className={styles.entries}>
 				<tbody>
