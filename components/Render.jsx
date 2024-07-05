@@ -5,7 +5,16 @@ import React from "react";
 
 function RenderEntry({ url, data, back }) {
 	if (data === null) {
-		return <></>;
+		return <tr className={styles.entry}>
+			<td className={styles.file_icon}>
+				<i className="bi bi-folder-x" />
+			</td>
+			<td className={styles.entry_name}>
+				<p>Directory Empty</p>
+			</td>
+			<td className={styles.entry_item}>X</td>
+			<td className={styles.entry_item}>X</td>
+		</tr>;
 	}
 
 	return (
@@ -59,7 +68,7 @@ export function Render({ url, data, back = false }) {
 			<b className={styles.dir}>Path: {data.dir !== "" ? data.dir : "/"}</b>
 			<table className={styles.entries}>
 				<tbody>
-				<tr className={styles.entry}>
+				<tr className={styles.entry_main}>
 					<th></th>
 					<th className={styles.entry_name}>Name</th>
 					<th className={styles.entry_item}>Size</th>

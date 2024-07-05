@@ -9,6 +9,7 @@
 .entries {
 	width: 100%;
 	border-collapse: collapse;
+	margin: 10px 0;
 
 	th {
 		text-align: left;
@@ -17,8 +18,18 @@
 	}
 }
 
+.entry_main {
+	height: 30px;
+}
+
 .entry {
-	height: 25px;
+	height: 30px;
+	transition-duration: 300ms;
+
+	&:hover {
+		transition-duration: 300ms;
+		background-color: var(--hover-color);
+	}
 }
 
 .file_icon {

@@ -6,10 +6,8 @@ export default async function Path({ params }) {
 
 		let path = "";
 		for (const p of params.slug) {
-			path += `/${p}`
+			path += `/${p}`;
 		}
-
-		console.log(path);
 
 		const res = await fetch(`${process.env.SERVER_URL}/path${path}`, {
 			mode: "cors",
