@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import styles from "./render.module.scss";
-import React from "react";
+import React, {useEffect, useState} from "react";
 
 function RenderEntry({ url, data, back }) {
 	if (data === null) {
@@ -16,10 +16,6 @@ function RenderEntry({ url, data, back }) {
 			<td className={styles.entry_item}>X</td>
 			<td className={styles.entry_item}>X</td>
 		</tr>;
-	}
-
-	if (typeof location === "undefined") {
-		return;
 	}
 
 	return (
@@ -68,9 +64,18 @@ function RenderEntry({ url, data, back }) {
  * @returns { JSX.Element }
  */
 export function Render({ url, data, back = false }) {
+	const [mounted, setMounted] = useState(false);
 	const router = useRouter();
+	if (typeof window === "undefined") {
+		return <></>;
+	}
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	return (
-		<div className={styles.container}>
+		mounted && <div className={styles.container}>
 			<div className={styles.explorer}>
 				<b>Path: {data.dir !== "" ? data.dir : "/"}</b>
 				<button onClick={ev => {
@@ -79,25 +84,25 @@ export function Render({ url, data, back = false }) {
 				}}>Raw</button>
 			</div>
 			<table className={styles.entries}>
-				<tbody>
+				<thead>
 				<tr className={styles.entry_main}>
-					<th></th>
+					<th className={styles.file_icon}></th>
 					<th className={styles.entry_name}>Name</th>
 					<th className={styles.entry_item}>Size</th>
 					<th className={styles.entry_item}>Modified</th>
 				</tr>
-				{
-					!back ? <></> : <tr className={styles.entry}>
-						<td className={styles.file_icon}></td>
-						<td className={styles.entry_name}>
-							<a href={`${location.pathname}/../`}>
-								../
-							</a>
-						</td>
-						<td className={styles.entry_item}>-</td>
-						<td className={styles.entry_item}>-</td>
-					</tr>
-				}
+				</thead>
+				<tbody>
+				{back ? <tr className={styles.entry}>
+					<td className={styles.file_icon}></td>
+					<td className={styles.entry_name}>
+						<a href={`${location.pathname}/../`}>
+							../
+						</a>
+					</td>
+					<td className={styles.entry_item}>-</td>
+					<td className={styles.entry_item}>-</td>
+				</tr> : null}
 				<RenderEntry url={url} data={data.data} back={back} />
 				</tbody>
 			</table>

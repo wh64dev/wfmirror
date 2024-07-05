@@ -19,6 +19,5 @@ export default async function Path({ params }) {
 	}
 
 	const data = await read();
-
 	return <Render url={process.env.SERVER_URL} data={data} back={true} />
 }
