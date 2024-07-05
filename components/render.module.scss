@@ -2,8 +2,10 @@
 	width: 100%;
 }
 
-.dir {
-	padding: 10px 7px;
+.explorer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .entries {

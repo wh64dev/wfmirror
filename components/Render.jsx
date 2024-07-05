@@ -58,6 +58,11 @@ function RenderEntry({ url, data, back }) {
 	);
 }
 
+function click(ev, url) {
+	ev.preventDefault();
+	location.href = url;
+}
+
 /**
  * @author WH64
  * @returns { JSX.Element }
@@ -65,7 +70,10 @@ function RenderEntry({ url, data, back }) {
 export function Render({ url, data, back = false }) {
 	return (
 		<div className={styles.container}>
-			<b className={styles.dir}>Path: {data.dir !== "" ? data.dir : "/"}</b>
+			<div className={styles.explorer}>
+				<b>Path: {data.dir !== "" ? data.dir : "/"}</b>
+				<button onClick={ev => click(ev, `${url}/path${data.dir}`)}>Raw</button>
+			</div>
 			<table className={styles.entries}>
 				<tbody>
 				<tr className={styles.entry_main}>
