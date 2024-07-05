@@ -5,7 +5,8 @@ export default async function Home() {
 		"use server";
 		const res = await fetch(`${process.env.SERVER_URL}/path/`, {
 			mode: "cors",
-			method: "GET"
+			method: "GET",
+			cache: "no-cache"
 		});
 
 		return res.json();

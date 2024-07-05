@@ -13,7 +13,8 @@ export default async function Path({ params }) {
 
 		const res = await fetch(`${process.env.SERVER_URL}/path${path}`, {
 			mode: "cors",
-			method: "GET"
+			method: "GET",
+			cache: "no-cache"
 		});
 
 		return res.json();
