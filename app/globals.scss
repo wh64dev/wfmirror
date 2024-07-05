@@ -26,6 +26,7 @@
 	--foreground: #ffffff;
 
 	--hover-color: #aaaaaa44;
+	--focus-color: #cccccc;
 }
 
 * {
@@ -80,5 +81,20 @@ a {
 
 	&:hover {
 		text-decoration: underline;
+	}
+}
+
+button {
+	cursor: pointer;
+	padding: 3px 7px;
+	border-radius: 5px;
+	color: var(--foreground);
+	transition-duration: 300ms;
+	background: var(--background);
+	border: 1px solid var(--foreground);
+
+	&:focus {
+		transition-duration: 300ms;
+		border: 1px solid var(--focus-color);
 	}
 }
