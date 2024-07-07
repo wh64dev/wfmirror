@@ -91,7 +91,7 @@ func (dw *DirWorker) List(ctx *gin.Context) {
 	}
 
 	if !file.IsDir() {
-		ctx.FileAttachment(baseDir, file.Name())
+		ctx.File(baseDir)
 		return
 	}
 

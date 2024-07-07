@@ -13,16 +13,17 @@ function RenderEntry({ url, data, back }) {
 			<td className={styles.entry_name}>
 				<p>Directory Empty</p>
 			</td>
-			<td className={styles.entry_item}>X</td>
-			<td className={styles.entry_item}>X</td>
+			<td className={styles.entry_item}>-</td>
+			<td className={styles.entry_item}>-</td>
+			<td className={styles.entry_item}>-</td>
 		</tr>;
 	}
 
 	return (
 		<>
 			{data.map((file, index) => {
+				const resolvedPath = `${location.pathname}/${file.name}`;
 				if (file.type === "dir") {
-					const resolvedPath = `${location.pathname}/${file.name}`;
 
 					return (
 						<tr key={index} className={styles.entry}>
@@ -46,7 +47,7 @@ function RenderEntry({ url, data, back }) {
 							<i className="bi bi-file-earmark"/>
 						</td>
 						<td className={styles.entry_name}>
-							<a href={`${url}/path/${file.url}`}>
+							<a href={resolvedPath}>
 								{file.name}
 							</a>
 						</td>
@@ -65,6 +66,7 @@ function RenderEntry({ url, data, back }) {
  */
 export function Render({ url, data, back = false }) {
 	const [mounted, setMounted] = useState(false);
+	const [modal, setModal] = useState(false);
 	const router = useRouter();
 	if (typeof window === "undefined") {
 		return <></>;
@@ -103,7 +105,13 @@ export function Render({ url, data, back = false }) {
 					<td className={styles.entry_item}>-</td>
 					<td className={styles.entry_item}>-</td>
 				</tr> : null}
-				<RenderEntry url={url} data={data.data} back={back} />
+				<RenderEntry
+					url={url}
+					data={data.data}
+					back={back}
+					modal={modal}
+					setModal={setModal}
+				/>
 				</tbody>
 			</table>
 		</div>

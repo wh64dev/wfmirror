@@ -1,5 +1,5 @@
 import { Render } from "@/components/Render";
-import { RenderContent } from "@/components/RenderContent";
+import { permanentRedirect } from "next/navigation";
 
 export default async function Path({ params }) {
 	async function read() {
@@ -10,25 +10,20 @@ export default async function Path({ params }) {
 			path += `/${p}`;
 		}
 
-		const res = await fetch(`${process.env.SERVER_URL}/path${path}`, {
+		const url = `${process.env.SERVER_URL}/path${path}`;
+		const res = await fetch(url, {
 			mode: "cors",
 			method: "GET",
 			cache: "no-cache"
 		});
 
-		try {
-			return await res.json();
-		} catch (err) {
-			// IGNORE
+		if (!res.headers.get("Content-Type").startsWith("application/json")) {
+			return permanentRedirect(url);
 		}
 
-		return res;
+		return await res.json();
 	}
 
 	const data = await read();
-	if (data instanceof Response) {
-		return <RenderContent obj={data} />
-	}
-
 	return <Render url={process.env.SERVER_URL} data={data} back={true} />
 }

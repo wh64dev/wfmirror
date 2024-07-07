@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 
 	"github.com/devproje/plog/level"
@@ -35,6 +36,10 @@ func init() {
 	cnf := config.Get()
 	if _, err = os.ReadDir(cnf.Global.DataDir); err != nil {
 		_ = os.Mkdir(cnf.Global.DataDir, 0775)
+	}
+
+	if runtime.GOOS == "windows" {
+		log.Fatalln("Windows not supported yet! Please use Linux or MacOS")
 	}
 }
 
