@@ -14,6 +14,7 @@ import (
 func New(app *gin.Engine) {
 	dirWorker := new(DirWorker)
 	app.Use(middleware.CORS)
+	app.LoadHTMLGlob("pages/*")
 
 	app.GET("/", func(ctx *gin.Context) {
 		start := time.Now()
@@ -27,6 +28,7 @@ func New(app *gin.Engine) {
 		})
 	})
 	app.GET("/path/*dirname", dirWorker.List)
+	app.GET("/raw/*dirname", dirWorker.ShowRaw)
 	app.GET("/nodeinfo", func(ctx *gin.Context) {
 		start := time.Now()
 		cnf := config.Get()

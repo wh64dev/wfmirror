@@ -2,9 +2,11 @@ package routes
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -91,7 +93,7 @@ func (dw *DirWorker) List(ctx *gin.Context) {
 	}
 
 	if !file.IsDir() {
-		ctx.File(baseDir)
+		ctx.Redirect(http.StatusOK, fmt.Sprintf("/raw/%s", dirname))
 		return
 	}
 
@@ -106,5 +108,62 @@ func (dw *DirWorker) List(ctx *gin.Context) {
 		"dir":          dirname,
 		"data":         directory,
 		"respond_time": fmt.Sprintf("%dms", time.Since(start).Milliseconds()),
+	})
+}
+
+func (dw *DirWorker) ShowRaw(ctx *gin.Context) {
+	var root = false
+	var dirname = ctx.Param("dirname")
+	if dirname == "/" || dirname == "/root" {
+		dirname = ""
+		root = true
+	}
+
+	cnf := config.Get()
+	baseDir := filepath.Join(cnf.Global.DataDir, dirname)
+	file, err := os.Stat(baseDir)
+	if err != nil {
+		ctx.Status(404)
+		return
+	}
+
+	if !file.IsDir() {
+		ctx.File(baseDir)
+		return
+	}
+
+	directory, err := worker(baseDir, dirname)
+	if err != nil {
+		ctx.Status(404)
+		return
+	}
+
+	render := ""
+	if !root {
+		if dirname[len(dirname)-1] == '/' {
+			render += fmt.Sprintf("<a href='/raw%s..'>../</a><br/>", dirname)
+		} else {
+			render += fmt.Sprintf("<a href='/raw%s/..'>../</a><br/>", dirname)
+		}
+	}
+
+	for _, entry := range directory {
+		var resolved = strings.ReplaceAll(fmt.Sprintf("/raw%s/%s", dirname, entry.Name), "//", "/")
+		if entry.Type == "dir" {
+			render += fmt.Sprintf("<a href='%s'>%s/</a><br/>", resolved, entry.Name)
+			continue
+		}
+
+		render += fmt.Sprintf("<a href='%s'>%s</a><br/>", resolved, entry.Name)
+	}
+
+	var resolveName = fmt.Sprintf("%s/", dirname)
+	if !root {
+		resolveName = dirname
+	}
+
+	ctx.HTML(http.StatusOK, "raw.html", gin.H{
+		"dirname": resolveName,
+		"content": template.HTML(render),
 	})
 }

@@ -82,7 +82,7 @@ export function Render({ url, data, back = false }) {
 				<b>Path: {data.dir !== "" ? data.dir : "/"}</b>
 				<button onClick={ev => {
 					ev.preventDefault();
-					router.push(`${url}/path${data.dir}`);
+					router.push(`${url}/raw${data.dir}`);
 				}}>Raw</button>
 			</div>
 			<table className={styles.entries}>
