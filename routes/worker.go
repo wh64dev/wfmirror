@@ -93,7 +93,7 @@ func (dw *DirWorker) List(ctx *gin.Context) {
 	}
 
 	if !file.IsDir() {
-		ctx.Redirect(http.StatusOK, fmt.Sprintf("/raw/%s", dirname))
+		ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("/raw/%s", dirname))
 		return
 	}
 
